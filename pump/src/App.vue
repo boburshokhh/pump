@@ -1,24 +1,20 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
+import FooterComponent from "./components/footer.vue";
 </script>
 
 <template>
   <div id="app">
-    <HelloWorld msg="Vite + Vue" />
+    <n-layout>
+      <n-layout-content>
+        <router-view name="chartPump"></router-view>
+        <router-view name="naiveTable2"></router-view>
+        <router-view />
+      </n-layout-content>
+      <FooterComponent></FooterComponent>
+    </n-layout>
   </div>
 </template>
 
 <style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
+  
 </style>
