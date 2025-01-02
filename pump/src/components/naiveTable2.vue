@@ -1,136 +1,166 @@
 <template>
-    <div class="table">
-        <dialogPump/>
-        <n-flex justify="center">
-        <n-table :bordered="true" :single-line="false" >
-            <thead>
-                <tr>
-                    <th style="width: 8%;">Станция</th>
-                    <th>Расход, м³/ч</th>
-                    <th>Тип насоса</th>
-                    <th style="width: 12%;">Тип ротора</th>
-                    <th>Количество насосов</th> 
-                    <th>Число оборотов</th>
-                    <th>Давление на входе МНС,<br>кПа</th>
-                    <th>Давление на выходе НПС,<br>кПа</th>
-                    <th>Затрачиваемая мощность,
-                        <br>кВт</th>
-                    <th>Тип АФП</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="(item, index) in data" :key="index">
-                    <td>{{ item.station }}</td>
-                    <td>{{ item.flow }}</td>
-                    <td>
-                <tr v-for="(pump, pIndex) in item.pumps" :key="pIndex">
-                    <td class="custom-table-border">{{ pump.type }}</td>
-                </tr>
+  <div class="table">
+    <n-notification-provider>
+      <notifications
+        title="Ошибка"
+        description="Заполните вся необходимые поля "
+        :duration="5000"
+        type="error"
+        :asyncHandler="fetchData"
+        @trigger="onNotificationTrigger"
+      />
+    </n-notification-provider>
+    <dialogPump />
+    <n-flex justify="center">
+      <n-table :bordered="true" :single-line="false">
+        <thead>
+          <tr>
+            <th style="width: 8%">Станция</th>
+            <th>Расход, м³/ч</th>
+            <th>Тип насоса</th>
+            <th style="width: 12%">Тип ротора</th>
+            <th>Количество насосов</th>
+            <th>Число оборотов</th>
+            <th>Давление на входе МНС,<br />кПа</th>
+            <th>Давление на выходе НПС,<br />кПа</th>
+            <th>Затрачиваемая мощность, <br />кВт</th>
+            <th>Тип АФП</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(item, index) in stations" :key="index">
+            <td>{{ item.station }}</td>
+            <td>{{ item.flow }}</td>
+            <td>
+              <tr v-for="(pump, pIndex) in item.pumps" :key="pIndex">
+                <td class="custom-table-border">{{ pump.type }}</td>
+              </tr>
+            </td>
+            <td>
+              <tr v-for="(pump, pIndex) in item.pumps" :key="pIndex">
+                <td class="custom-table-border">{{ pump.rotor }}</td>
+              </tr>
+            </td>
+            <td>
+              <tr v-for="(pump, pIndex) in item.pumps" :key="pIndex">
+                <td class="custom-table-border">
+                  <n-input-number
+                    :status="validNumOfPumps(pump.numOfPumps)"
+                    v-model:value="pump.numOfPumps"
+                    clearable
+                  />
                 </td>
-                <td>
-                    <tr v-for="(pump, pIndex) in item.pumps" :key="pIndex">
-                        <td class="custom-table-border">{{ pump.rotor }}</td>
-                    </tr>
+              </tr>
+            </td>
+            <td>
+              <tr v-for="(pump, pIndex) in item.pumps" :key="pIndex">
+                <td class="custom-table-border">
+                  <n-input-number
+                    :status="validNumOfPumps(pump.rpm)"
+                    v-model:value="pump.rpm"
+                    clearable
+                  />
                 </td>
-                <td>
-                    <tr v-for="(pump, pIndex) in item.pumps" :key="pIndex">
-                        <td class="custom-table-border">
-                            <n-input-number :status="validNumOfPumps(pump.numOfPumps)" v-model:value="pump.numOfPumps"
-                                clearable />
-                        </td>
-                    </tr>
-                </td>
-                <td>
-                    <tr v-for="(pump, pIndex) in item.pumps" :key="pIndex">
-                        <td class="custom-table-border">
-                            <n-input-number :status="validNumOfPumps(pump.rpm)" v-model:value="pump.rpm" clearable />
-                        </td>
-                    </tr>
-                </td>
-                <td>
-                    {{ item.inputPressure }}
-                </td>
-                <td>
-                    {{ item.outputPressure }}
-                </td>
-                <td>
-                    {{ item.power }}
-                </td>
-                <td>
-                    {{ item.afpType }}
-                </td>
-                </tr>
-            </tbody>
-        </n-table>
+              </tr>
+            </td>
+            <td>
+              {{ item.inputPressure }}
+            </td>
+            <td>
+              {{ item.outputPressure }}
+            </td>
+            <td>
+              {{ item.power }}
+            </td>
+            <td>
+              {{ item.afpType }}
+            </td>
+          </tr>
+        </tbody>
+      </n-table>
     </n-flex>
-    </div>
+  </div>
 </template>
 
 <script>
-import dialogPump from '../components/dialogPump.vue'
+import dialogPump from "../components/dialogPump.vue";
+import { useStationStore } from "../stores/index";
+import notifications from "./notifications.vue";
+import { useNotification } from "naive-ui";
+
 export default {
-    components:{
-        dialogPump
+  components: {
+    dialogPump,
+    notifications,
+    useNotification,
+  },
+  computed: {
+    stations() {
+      return this.stationStore.getStations;
     },
-    data() {
-        return {
-            data: [
-                
-                {
-                    station: "Станция 1",
-                    flow: "100 ",
-                    pumps: [
-                        { type: "ПНС", rotor: "D-56(ПУУМ)", numOfPumps: 2, rpm: 980 },
-                        { type: "МНС", rotor: "D-475", numOfPumps: 0, rpm: 2980 },
-                    ],
-                    inputPressure: "2345 ",
-                    outputPressure: "8442 ",
-                    power: "50",
-                    afpType: "Тип 1",
-                },
-                {
-                    station: "Станция 2",
-                    flow: "200 ",
-                    pumps: [
-                        { type: "ПНС", rotor: "D-56(ПУУМ)", numOfPumps: 2, rpm: 980 },
-                        { type: "МНС", rotor: "D-475", numOfPumps: 0, rpm: 2980 },
-                    ],
-                    inputPressure: "2545 ",
-                    outputPressure: "9442 ",
-                    power: "70",
-                    afpType: "Тип 2",
-                },
-                {
-                    station: "Станция 3",
-                    flow: "150 ",
-                    pumps: [
-                        { type: "Вихревой", rotor: "Тип C", numOfPumps: 1, rpm: 1400 },
-                    ],
-                    inputPressure: "1580 ",
-                    outputPressure: "6334 ",
-                    power: "40",
-                    afpType: "Тип 3",
-                },
-            ],
-        };
+  },
+  data() {
+    return {
+      stationStore: useStationStore(),
+      showNotification: false,
+      notificationText: "",
+      notificationColor: "red",
+    };
+  },
+  methods: {
+    async fetchData() {
+      console.log("Fetching data...");
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      console.log("Data fetched successfully.");
     },
-    methods: {
-        validNumOfPumps(value) {
-            return value > 0 ? null : "error";
-        },
-    }
+    onNotificationTrigger() {
+      console.log("Notification triggered.");
+    },
+    // showNotification() {
+    //   this.snackbar = true;
+    // },
+    triggerError() {
+      this.notificationText = "Произошла ошибка!";
+      this.notificationColor = "red";
+      this.showNotification = true;
+
+      // Автоматическое закрытие через 6 секунд
+      setTimeout(() => {
+        this.showNotification = false;
+      }, 6000);
+    },
+    validNumOfPumps(value) {
+      return value > 0 ? null : "error";
+    },
+  },
 };
 </script>
 
 <style>
 .custom-table-border {
-    border: none !important;
+  border: none !important;
 }
-#pumpChart{
-    max-width: 100%;
-    max-height: 100%;
+
+#pumpChart {
+  max-width: 100%;
+  max-height: 100%;
 }
-.n-table th{
-    white-space:normal !important;
+
+.n-table th {
+  white-space: normal !important;
+}
+.table-container {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+@media (max-width: 768px) {
+  .table-container table {
+    font-size: 14px;
+  }
+  .table-container th,
+  .table-container td {
+    white-space: nowrap;
+  }
 }
 </style>

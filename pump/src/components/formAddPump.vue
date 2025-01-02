@@ -1,90 +1,143 @@
 <template>
-    <form @submit.prevent="submit">
-      <v-text-field
-        v-model="name.value.value"
-        :counter="10"
-        :error-messages="name.errorMessage.value"
-        label="Названия НПС"
-      ></v-text-field>
-  
-      <v-text-field
-        v-model="phone.value.value"
-        :counter="7"
-        :error-messages="phone.errorMessage.value"
-        label="Phone Number"
-      ></v-text-field>
-  
-      <v-text-field
-        v-model="email.value.value"
-        :error-messages="email.errorMessage.value"
-        label="E-mail"
-      ></v-text-field>
-  
-      <v-select
-        v-model="select.value.value"
-        :error-messages="select.errorMessage.value"
-        :items="items"
-        label="Select"
-      ></v-select>
-  
-      <v-checkbox
-        v-model="checkbox.value.value"
-        :error-messages="checkbox.errorMessage.value"
-        label="Option"
-        type="checkbox"
-        value="1"
-      ></v-checkbox>
-  
-      <v-btn
-        class="me-4"
-        type="submit"
-      >
-        submit
-      </v-btn>
-    </form>
-  </template>
-  <script setup>
-  import { ref } from 'vue'
-  import { useField, useForm } from 'vee-validate'
+  <form @submit.prevent="submit">
+    <h3>Добавить НПС</h3>
+    <v-row>
+      <v-col>
+        <v-text-field v-model="data.station" :counter="13" :error-messages="errors.station"
+          label="Названия НПС"></v-text-field>
+      </v-col>
+      <v-col>
+        <v-number-input v-model="data.flow" :min="0" :reverse="false" control-variant="split" label="Расход" :hideInput="false"
+          inset></v-number-input>
+      </v-col>
+    </v-row>
+    <v-form ref="form" v-model="isFormValid">
+      <p>Добавить насос</p>
+      <v-row v-for="(form, index) in forms" :key="index">
+        <v-col cols="3">
+          <v-text-field v-model="form.pumpType" :rules="[rules.required]" label="Тип насоса" outlined
+            dense></v-text-field>
+        </v-col>
+        <v-col cols="3">
+          <v-text-field v-model="form.rotorType" :rules="[rules.required]" label="Тип рот." outlined
+            dense></v-text-field>
+        </v-col>
+        <v-col cols="3">
+          <!-- <v-text-field
+            v-model="form.pumpCount"
+            :rules="[rules.required, rules.isNumber]"
+            label="Кол.нас"
+            outlined
+            dense
+          ></v-text-field> -->
+          <v-number-input v-model="form.pumpCount" :min="0" :reverse="false" control-variant="stacked" label="Кол.нас"
+            :hideInput="false" inset></v-number-input>
+        </v-col>
+        <v-col cols="3">
+          <v-number-input v-model="form.rotationSpeed" :max="600" :min="200" :step="10" control-variant="split"
+            label="Число оборотов"></v-number-input>
+        </v-col>
+      </v-row>
+      <v-row class="justify-space-between">
+        <v-col cols="auto">
+          <v-btn outlined color="white" style="background-color: #333" @click="addForm">
+            <v-icon left>mdi-plus</v-icon>
+            Добавить
+          </v-btn>
+        </v-col>
+        <v-col cols="auto">
+          <v-btn outlined type="submit" color="primary" @click="submitForm">
+            Сохранить
+          </v-btn>
+        </v-col>
+      </v-row>
+    </v-form>
+  </form>
+</template>
 
-  const { handleSubmit, handleReset } = useForm({
-    validationSchema: {
-      name (value) {
-        if (value?.length >= 2) return true
-        return 'Name needs to be at least 2 characters.'
+<script>
+import { VNumberInput } from 'vuetify/labs/VNumberInput'
+export default {
+  components: {
+    VNumberInput
+  },
+  data() {
+    return {
+      isFormValid: false,
+      forms: [
+        {
+          rotorType: "",
+          pumpCount: 0,
+          rotationSpeed: 0,
+          pumpType: "",
+        },
+      ],
+      data: {
+        station: "",
+        flow: 0,
       },
-      phone (value) {
-        if (/^[0-9-]{7,}$/.test(value)) return true
-        return 'Phone number needs to be at least 7 digits.'
+      errors: {
+        station: "",
+        flow: "",
       },
-      email (value) {
-        if (/^[a-z.-]+@[a-z.-]+\.[a-z]+$/i.test(value)) return true
-        return 'Must be a valid e-mail.'
+      rules: {
+        required: (value) => !!value || "Поле обязательно для заполнения.",
+        isNumber: (value) =>
+          !isNaN(Number(value)) || "Значение должно быть числом.",
       },
-      select (value) {
-        if (value) return true
-        return 'Select an item.'
-      },
-      checkbox (value) {
-        if (value === '1') return true
-        return 'Must be checked.'
-      },
+    };
+  },
+  methods: {
+    addForm() {
+      this.forms.push({
+        rotorType: "",
+        pumpCount: "",
+        rotationSpeed: "",
+        pumpType: "",
+      });
     },
-  })
-  const name = useField('name')
-  const phone = useField('phone')
-  const email = useField('email')
-  const select = useField('select')
-  const checkbox = useField('checkbox')
+    validate() {
+      let isValid = true;
+      if (this.data.station.length < 2) {
+        this.errors.station = "Названия должно содержать как минимум 2 символа.";
+        isValid = false;
+      } else {
+        this.errors.station = "";
+      }
+      return isValid;
+    },
+    validateForm(form) {
+      const isValidRotor = !!form.rotorType || "Поле обязательно.";
+      const isValidPumpCount =
+        !isNaN(Number(form.pumpCount)) && !!form.pumpCount || "Должно быть числом.";
+      const isValidRotationSpeed =
+        !isNaN(Number(form.rotationSpeed)) && !!form.rotationSpeed || "Должно быть числом.";
+      const isValidPumpType = !!form.pumpType || "Поле обязательно.";
 
-  const items = ref([
-    'Item 1',
-    'Item 2',
-    'Item 3',
-    'Item 4',
-  ])
+      return {
+        rotorType: isValidRotor,
+        pumpCount: isValidPumpCount,
+        rotationSpeed: isValidRotationSpeed,
+        pumpType: isValidPumpType,
+      };
+    },
+    submitForm() {
+      const errors = this.forms.map((form) => this.validateForm(form));
+      const isAllFormsValid = errors.every((error) =>
+        Object.values(error).every((value) => value === true)
+      );
 
-  const submit = handleSubmit(values => {
-    alert(JSON.stringify(values, null, 2))
-  })
+      if (isAllFormsValid) {
+        console.log("Все формы успешно отправлены:", this.forms);
+      } else {
+        console.log("Некоторые формы содержат ошибки:", errors);
+      }
+    },
+    submit() {
+      if (this.validate()) {
+        alert(JSON.stringify(this.data, null, 2));
+      }
+    },
+  },
+};
 </script>

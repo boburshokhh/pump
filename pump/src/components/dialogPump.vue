@@ -1,10 +1,10 @@
 <template>
   <n-flex :margin="16" justify="end">
-    <v-btn class="ma-3" variant="tonal" color="primary"  :ripple="true" @click="openDrawer">
+    <v-btn  class="ma-3" variant="tonal" color="primary"  :ripple="true" @click="openDrawer">
       Изменить параметры схемы
     </v-btn>
   </n-flex>
-  <n-drawer v-model:show="localShow" :width="502" :placement="placement">
+  <n-drawer v-model:show="localShow" :width="700" :placement="placement">
     <n-drawer-content>
       <formAddPump />
     </n-drawer-content>

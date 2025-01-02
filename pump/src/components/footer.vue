@@ -1,50 +1,32 @@
-<template>
-    <n-layout-footer bordered class="footer">
-      <div class="footer-content">
-        <span>© 2024 РГУ нефти и газа (НИУ) имени И.М. Губкина. Все права защищены.</span>
-        <n-space align="center">
-          <n-button text type="primary" @click="navigateTo('terms')">Условия использования</n-button>
-          <n-button text type="primary" @click="navigateTo('privacy')">Политика конфиденциальности</n-button>
-          <n-button text type="primary" @click="navigateTo('contact')">Контакты</n-button>
-        </n-space>
+  <template>
+    <v-footer
+      class="bg-indigo-lighten-1 text-center d-flex flex-column"
+    >
+      <div>
+        <v-btn
+          v-for="icon in icons"
+          :key="icon"
+          :icon="icon"
+          class="mx-4"
+          variant="text"
+        ></v-btn>
       </div>
-    </n-layout-footer>
+      <div class="pt-0">
+        © 2024 РГУ нефти и газа (НИУ) имени И.М. Губкина. Все права защищены
+      </div>
+      <v-divider></v-divider>
+    </v-footer>
   </template>
-  
+
   <script>
   export default {
-    name: "FooterComponent",
-    methods: {
-      navigateTo(route) {
-        this.$router.push({ name: route });
-      },
-    },
-  };
-  </script>
-  
-  <style scoped>
-  .footer {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #f5f5f5;
-    padding: 16px;
+    data: () => ({
+      icons: [
+        'mdi-facebook',
+        'mdi-twitter',
+        'mdi-linkedin',
+        'mdi-instagram',
+      ],
+    }),
   }
-  
-  .footer-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-  
-  .footer-content span {
-    margin-bottom: 8px;
-    color: #606266;
-  }
-  
-  .n-space {
-    margin-top: 8px;
-  }
-  </style>
-  
+</script>
