@@ -1,7 +1,22 @@
 <template>
   <n-flex :margin="16" justify="end">
-    <v-btn  class="ma-3" variant="tonal" color="primary"  :ripple="true" @click="openDrawer">
-      Изменить параметры схемы
+    <v-btn
+      class="ma-3"
+      variant="tonal"
+      color="primary"
+      :ripple="true"
+      @click="openDrawer"
+      >
+      <v-icon
+      icon="mdi-plus"
+      start
+      size="25"
+    ></v-icon>
+    
+    Добавить
+      <v-tooltip activator="parent" location="start"
+        >Изменить параметры схемы</v-tooltip
+      >
     </v-btn>
   </n-flex>
   <n-drawer v-model:show="localShow" :width="700" :placement="placement">

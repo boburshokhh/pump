@@ -3,11 +3,11 @@
     <n-notification-provider>
       <notifications
         title="Ошибка"
+        ref="notificationComponent"
         description="Заполните вся необходимые поля "
         :duration="5000"
         type="error"
         :asyncHandler="fetchData"
-        @trigger="onNotificationTrigger"
       />
     </n-notification-provider>
     <dialogPump />
@@ -105,6 +105,7 @@ export default {
       showNotification: false,
       notificationText: "",
       notificationColor: "red",
+      notificationComponent: null,
     };
   },
   methods: {
@@ -116,18 +117,13 @@ export default {
     onNotificationTrigger() {
       console.log("Notification triggered.");
     },
-    // showNotification() {
-    //   this.snackbar = true;
-    // },
     triggerError() {
       this.notificationText = "Произошла ошибка!";
       this.notificationColor = "red";
       this.showNotification = true;
-
-      // Автоматическое закрытие через 6 секунд
       setTimeout(() => {
         this.showNotification = false;
-      }, 6000);
+      }, 5000);
     },
     validNumOfPumps(value) {
       return value > 0 ? null : "error";

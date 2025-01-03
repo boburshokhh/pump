@@ -1,9 +1,5 @@
 <template>
-  <div>
-    <n-notification-provider>
-      <n-button @click="triggerNotification">Show Notification</n-button>
-    </n-notification-provider>
-  </div>
+  <n-notification-provider></n-notification-provider>
 </template>
 
 <script>
@@ -23,11 +19,11 @@ export default defineComponent({
     },
     duration: {
       type: Number,
-      default: 3000, // milliseconds
+      default: 3000, 
     },
     type: {
       type: String,
-      default: "info", // success, error, warning, info
+      default: "info", 
       validator: (value) => ["success", "error", "warning", "info"].includes(value),
     },
     asyncHandler: {
@@ -40,12 +36,11 @@ export default defineComponent({
     const notification = useNotification();
 
     const triggerNotification = async () => {
-      emit("trigger");
       if (props.asyncHandler) {
         await props.asyncHandler();
       }
 
-      notification[props.type]({
+      notification[props.type]( {
         title: props.title,
         content: props.description,
         duration: props.duration,
@@ -58,7 +53,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style scoped>
-/* Add any necessary custom styles */
-</style>
