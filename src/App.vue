@@ -10,8 +10,6 @@ import Header from './components/layouts/Header.vue'
       <Header></Header>
       <div class="mt-14 "></div>
       <n-layout-content>
-        <router-view name="chartPump"></router-view>
-        <router-view name="naiveTable2"></router-view>
         <router-view />
       </n-layout-content>
       <FooterComponent></FooterComponent>
