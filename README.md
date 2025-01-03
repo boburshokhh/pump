@@ -27,13 +27,13 @@
 ### 1️⃣ **Клонируйте репозиторий**
 Склонируйте проект с GitHub на ваш локальный компьютер:
 ```bash
-git clone https://github.com/<your-username>/<repo-name>.git
+git clone https://github.com/boburshokhh/pump.git
 ```
 
 ### 2️⃣ **Установите зависимости**
 Перейдите в папку проекта и установите зависимости с помощью npm:
 ```bash
-cd <repo-name>
+cd pump
 npm install
 ```
 
@@ -42,7 +42,7 @@ npm install
 ```bash
 npm run dev
 ```
-Приложение будет доступно по адресу: [http://localhost:3000](http://localhost:3000)
+Приложение будет доступно по адресу: [http://localhost:5173](http://localhost:5173)
 
 ### 4️⃣ **Сборка для продакшена**
 Для сборки проекта используйте команду:
@@ -59,7 +59,6 @@ npm run build
 src/
 ├── assets/           # Статические файлы и ресурсы
 ├── components/       # Переиспользуемые компоненты
-├── views/            # Основные страницы приложения
 ├── router/           # Файлы конфигурации маршрутов
 ├── store/            # Хранилище данных (Pinia)
 ├── App.vue           # Главный компонент приложения
