@@ -100,7 +100,7 @@
 
 <script>
 import { VNumberInput } from "vuetify/labs/VNumberInput";
-import notifications from "./notifications.vue";
+import notifications from "../utils/NotificationComponent.vue";
 export default {
   mounted() {},
   components: {

@@ -83,9 +83,9 @@
 </template>
 
 <script>
-import dialogPump from "../components/dialogPump.vue";
+import dialogPump from "./modals/PumpDialog.vue";
 import { useStationStore } from "../stores/index";
-import notifications from "./notifications.vue";
+import notifications from "../utils/NotificationComponent.vue";
 import { useNotification } from "naive-ui";
 
 export default {

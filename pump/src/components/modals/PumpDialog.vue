@@ -28,7 +28,7 @@
 
 <script>
 import { defineComponent, ref, watch } from "vue";
-import formAddPump from "./formAddPump.vue";
+import formAddPump from "../base/BaseForm.vue";
 
 export default defineComponent({
   components: {

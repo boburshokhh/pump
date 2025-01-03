@@ -1,9 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import App from '../App.vue';
-import formAddPump from '../components/formAddPump.vue';
-import dialogPump from '../components/dialogPump.vue'
-import naiveTable2 from '../components/naiveTable2.vue'
-import chartPump from '../components/chartPump.vue'
+import BaseTable from '../components/base/BaseTable.vue';
+import PumpChart from '../components/features/PumpChart.vue';
+import NotFound from '../components/layouts/NotFound.vue'
 
 const routes = [
   {
@@ -12,16 +11,16 @@ const routes = [
     component: App,
   },
   {
-    path: '/add-pump',
-    name: 'AddPumpForm',
-    component: dialogPump,
+    path: '/:pathMatch(.*)*', 
+    name: 'NotFound',
+    component: NotFound, 
   },
   {
     path: '/menu',
     name: 'Menu',
     components: {
-      chartPump: chartPump, // Дополнительный слот
-      naiveTable2: naiveTable2, // Еще один дополнительный слот
+      chartPump: PumpChart, 
+      naiveTable2: BaseTable, 
     },
   },
 ];
