@@ -26,3 +26,7 @@ app.use(NaiveUI)
 app.use(vuetify)
 app.use(pinia)
 app.mount('#app')
+
+import { useOptionsStore } from './stores/options';
+const optionsStore = useOptionsStore();
+optionsStore.loadOptions();

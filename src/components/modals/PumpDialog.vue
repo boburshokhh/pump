@@ -12,7 +12,6 @@
       start
       size="25"
     ></v-icon>
-    
     Добавить
       <v-tooltip activator="parent" location="start"
         >Изменить параметры схемы</v-tooltip

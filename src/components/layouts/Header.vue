@@ -3,7 +3,7 @@
         <v-app-bar-nav-icon></v-app-bar-nav-icon>
         <v-toolbar-title>Название сайта</v-toolbar-title>
         <v-spacer></v-spacer>
-        <v-btn text to="/menu">Главная</v-btn>
+        <v-btn text to="/">Главная</v-btn>
         <v-btn text to="/about">О нас</v-btn>
         <v-btn text to="/services">Услуги</v-btn>
         <v-btn text to="/contact">Контакты</v-btn>

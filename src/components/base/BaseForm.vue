@@ -1,89 +1,51 @@
 <template>
   <form @submit.prevent="submit">
     <n-notification-provider>
-      <notifications
-        v-for="(notification, index) in notificationInfo"
-        :key="index"
-        :title="notification.title"
-        :description="notification.description"
-        :type="notification.type"
-        :duration="5000"
-        ref="notificationComponent"
-      />
+      <notifications v-for="(notification, index) in notificationInfo" :key="index" :title="notification.title"
+        :description="notification.description" :type="notification.type" :duration="5000"
+        ref="notificationComponent" />
     </n-notification-provider>
     <h3>Добавить НПС</h3>
     <v-row>
       <v-col>
-        <v-text-field
-          v-model="data.station"
-          :counter="13"
-          :error-messages="errors.station"
-          label="Названия НПС"
-        ></v-text-field>
+        <v-text-field v-model="data.station" :counter="13" :error-messages="errors.station"
+          label="Названия НПС"></v-text-field>
       </v-col>
       <v-col>
-        <v-number-input
-          v-model="data.flow"
-          :min="0"
-          :reverse="false"
-          control-variant="split"
-          label="Расход"
-          :hideInput="false"
-          inset
-        ></v-number-input>
+        <v-number-input v-model="data.flow" :min="0" :reverse="false" control-variant="split" label="Расход"
+          :hideInput="false" inset></v-number-input>
       </v-col>
     </v-row>
     <v-form ref="form" v-model="isFormValid">
       <p>Добавить насос</p>
       <v-row v-for="(form, index) in forms" :key="index">
         <v-col cols="3">
-          <v-text-field
+          <!-- <v-text-field
             v-model="form.pumpType"
             :rules="[rules.required]"
             label="Тип насоса"
             outlined
             dense
-          ></v-text-field>
+          ></v-text-field> -->
+          <v-select v-model="pumpSelect" clearable autocomplete="off" label="Тип насоса" :items="items"></v-select>
         </v-col>
         <v-col cols="3">
-          <v-text-field
-            v-model="form.rotorType"
-            :rules="[rules.required]"
-            label="Тип рот."
-            outlined
-            dense
-          ></v-text-field>
+          <v-text-field v-model="form.rotorType" :rules="[rules.required]" label="Тип рот." outlined
+            dense></v-text-field>
         </v-col>
         <v-col cols="3">
-          <v-number-input
-            v-model="form.pumpCount"
-            :min="0"
-            :reverse="false"
-            control-variant="stacked"
-            label="Кол.нас"
-            :hideInput="false"
-            inset
-          ></v-number-input>
+          <v-number-input v-model="form.pumpCount" :min="0" :reverse="false" control-variant="stacked" label="Кол.нас"
+            :hideInput="false" inset></v-number-input>
         </v-col>
         <v-col cols="3">
-          <v-number-input
-            v-model="form.rotationSpeed"
-            :max="600"
-            :min="200"
-            :step="10"
-            control-variant="split"
-            label="Число оборотов"
-          ></v-number-input>
+          <v-number-input v-model="form.rotationSpeed" :max="600" :min="200" :step="10" control-variant="split"
+            label="Число оборотов"></v-number-input>
         </v-col>
       </v-row>
+      <!-- <p>{{ options }}</p> -->
       <v-row class="justify-space-between">
         <v-col cols="auto">
-          <v-btn
-            outlined
-            color="white"
-            style="background-color: #333"
-            @click="addForm"
-          >
+          <v-btn outlined color="white" style="background-color: #333" @click="addForm">
             <v-icon left>mdi-plus</v-icon>
             Добавить
           </v-btn>
@@ -99,18 +61,36 @@
 </template>
 
 <script>
+import { useOptionsStore } from "/src/stores/options";
 import { VNumberInput } from "vuetify/labs/VNumberInput";
 import notifications from "../utils/NotificationComponent.vue";
 export default {
-  mounted() {},
+  created() {
+    this.optionsStore = useOptionsStore();
+    this.loadOptions();
+  },
+  mounted() { },
+  computed: {
+    options() {
+      return this.optionsStore.selectOptions;
+    },
+  },
   components: {
     VNumberInput,
     notifications,
   },
   data() {
     return {
+      selectedOption: null,
       notificationInfo: [],
       isFormValid: false,
+      pumpSelect: null,
+      items: [
+        'Item 1',
+        'Item 2',
+        'Item 3',
+        'Item 4',
+      ],
       forms: [
         {
           rotorType: "",
@@ -136,6 +116,10 @@ export default {
     };
   },
   methods: {
+    async loadOptions() {
+      let res = await this.optionsStore.loadOptions();
+      console.log("res", res);
+    },
     /**
      *
      * @param {String} title
@@ -161,7 +145,6 @@ export default {
         }
       });
     },
-
     /**
      * @param {String} title
      * @param {String} description
@@ -215,13 +198,13 @@ export default {
       );
       if (isAllFormsValid && this.validate()) {
         return isAllFormsValid;
-      } else if(!this.validate()) {
+      } else if (!this.validate()) {
         this.notificationPost(
           "Ошибка при сохранении",
           "Пожалуйста, заполните все необходимые поля перед сохранением.",
           "error"
         );
-      }else{
+      } else {
         this.notificationPost(
           "Ошибка при сохранении",
           "Пожалуйста, заполните все необходимые поля перед сохранением.",
