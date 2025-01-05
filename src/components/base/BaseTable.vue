@@ -11,6 +11,7 @@
       />
     </n-notification-provider>
     <dialogPump />
+    <!-- <SelectComponents /> -->
     <n-flex justify="center">
       <n-table :bordered="true" :single-line="false">
         <thead>
@@ -84,15 +85,17 @@
 
 <script>
 import dialogPump from "../modals/PumpDialog.vue";
-import { useStationStore } from "../../stores/index";
+import { useIndexStore } from "../../stores/index";
 import notifications from "../utils/NotificationComponent.vue";
 import { useNotification } from "naive-ui";
+import SelectComponents from "../SelectComponent.vue";
 
 export default {
   components: {
     dialogPump,
     notifications,
     useNotification,
+    SelectComponents,
   },
   computed: {
     stations() {
@@ -101,7 +104,7 @@ export default {
   },
   data() {
     return {
-      stationStore: useStationStore(),
+      stationStore: useIndexStore(),
       showNotification: false,
       notificationText: "",
       notificationColor: "red",

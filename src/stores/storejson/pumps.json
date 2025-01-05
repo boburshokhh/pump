@@ -2,7 +2,7 @@
     {
         "id": 1,
         "name": "Насос НПС-1000",
-        "type": "Центробежный",
+        "label": "Центробежный",
         "rotor_type": "Закрытый",
         "max_capacity_m3_per_hour": 1000,
         "min_capacity_m3_per_hour": 100,
