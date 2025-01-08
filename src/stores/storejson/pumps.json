@@ -40,26 +40,6 @@
         "manufacturer": "Компания B"
     },
     {
-        "id": 3,
-        "name": "Насос НПС-1500",
-        "type": "Центробежный",
-        "rotor_type": "Закрытый",
-        "max_capacity_m3_per_hour": 1500,
-        "min_capacity_m3_per_hour": 150,
-        "max_pressure_mpa": 12,
-        "min_pressure_mpa": 3,
-        "max_power_kw": 750,
-        "min_power_kw": 75,
-        "max_rpm": 3200,
-        "min_rpm": 1100,
-        "efficiency_percent": 88,
-        "viscosity_cst": 60,
-        "temperature_c_range": "-5 to 50",
-        "material_body": "Чугун",
-        "material_rotor": "Сталь",
-        "manufacturer": "Компания C"
-    },
-    {
         "id": 4,
         "name": "Насос НПС-500",
         "type": "Шестеренный",

@@ -11,9 +11,10 @@
         ref="notificationComponent"
       />
     </n-notification-provider>
-    <h3>Добавить НПС</h3>
+
+    <h3>Параметры НПС</h3>
     <v-row>
-      <v-col>
+      <v-col cols="12" md="4">
         <v-text-field
           v-model="data.station"
           :counter="13"
@@ -21,72 +22,69 @@
           label="Названия НПС"
         ></v-text-field>
       </v-col>
-      <v-col>
+      <v-col cols="12" md="4">
         <v-number-input
           v-model="data.flow"
           :min="0"
           :reverse="false"
           control-variant="split"
           label="Расход"
+          :error-messages="errors.flow"
           :hideInput="false"
           inset
         ></v-number-input>
       </v-col>
+      <v-col cols="12" md="4">
+        <v-number-input
+          v-model="data.length"
+          :min="0"
+          :reverse="false"
+          control-variant="split"
+          label="Длина участка, км"
+          :hideInput="false"
+          inset
+          :error-messages="errors.length"
+        ></v-number-input>
+      </v-col>
     </v-row>
+
+    <n-collapse v-model:expanded="expandedKeys">
+      <n-collapse-item
+        title="Параметры жидкости"
+        name="1"
+        style="border: 1px solid #dcdcdc; border-radius: 8px; padding: 16px"
+      >
+        <div>
+          <LiquidParameters :data="data" :errors="errors" />
+        </div>
+      </n-collapse-item>
+    </n-collapse>
+    <br />
+    <n-collapse v-model:expanded="expandedKeys">
+      <n-collapse-item
+        title="Параметры трубы"
+        name="1"
+        style="border: 1px solid #dcdcdc; border-radius: 8px; padding: 16px"
+      >
+        <div>
+          <PipeParameters :data="data" :errors="errors" />
+        </div>
+      </n-collapse-item>
+    </n-collapse>
+
     <v-form ref="form" v-model="isFormValid">
-      <p>Добавить насос</p>
-      <v-row v-for="(pump, index) in pumps" :key="index">
-        <v-col cols="3">
-          <v-text-field
-            v-model="pump.type"
-            :rules="[rules.required]"
-            label="Тип нас."
-            outlined
-            dense
-          ></v-text-field>
-        </v-col>
-        <v-col cols="3">
-          <v-text-field
-            v-model="pump.rotor"
-            :rules="[rules.required]"
-            label="Тип рот."
-            outlined
-            dense
-          ></v-text-field>
-        </v-col>
-        <v-col cols="3">
-          <v-number-input
-            v-model="pump.numOfPumps"
-            :min="0"
-            :reverse="false"
-            control-variant="stacked"
-            label="Кол.нас"
-            :hideInput="false"
-            inset
-          ></v-number-input>
-        </v-col>
-        <v-col cols="3">
-          <v-number-input
-            v-model="pump.rpm"
-            :max="600"
-            :min="200"
-            :step="10"
-            control-variant="split"
-            label="Число оборотов"
-          ></v-number-input>
-        </v-col>
-      </v-row>
+      <PumpForm :pumps="pumps" :errors="errors.pumps" />
       <!-- <p>{{ stations }}</p> -->
       <v-row class="justify-space-between">
         <v-col cols="auto">
           <v-btn
             outlined
-            color="white"
+            color="secondary"
             style="background-color: #333"
             @click="addForm"
           >
             <v-icon left>mdi-plus</v-icon>
-            Добавить
+            Добавить насос
           </v-btn>
         </v-col>
         <v-col cols="auto">
@@ -104,6 +102,9 @@ import { useOptionsStore } from "/src/stores/options";
 import { useIndexStore } from "/src/stores/index";
 import { VNumberInput } from "vuetify/labs/VNumberInput";
 import notifications from "../utils/NotificationComponent.vue";
+import LiquidParameters from "../forms/LiquidParameters.vue";
+import PipeParameters from "../forms/PipeParameters.vue";
+import PumpForm from "../forms/PumpForm.vue";
 
 export default {
   created() {
@@ -122,6 +123,9 @@ export default {
   components: {
     VNumberInput,
     notifications,
+    LiquidParameters,
+    PipeParameters,
+    PumpForm,
   },
   data() {
     return {
@@ -150,10 +154,25 @@ export default {
       data: {
         station: "",
         flow: 0,
+        length: null,
+        density: 850,
+        viscosity: 10,
+        diameter: 0,
+        wallThickness: 0,
+        roughness: 0,
+        pressure: 0,
       },
       errors: {
         station: "",
         flow: "",
+        length: "",
+        density: "",
+        viscosity: "",
+        diameter: "",
+        wallThickness: "",
+        roughness: "",
+        pressure: "",
+        pumps: [{ type: "", rotor: "", numOfPumps: "" }],
       },
       rules: {
         required: (value) => !!value || "Поле обязательно для заполнения.",
@@ -188,12 +207,6 @@ export default {
       let res = await this.optionsStore.loadOptions();
       console.log("res", res);
     },
-    /**
-     *
-     * @param {String} title
-     * @param {String} description
-     * @param {String} type
-     */
     notificationPost(title, description, type) {
       if (!title || !description || !type) {
         console.warn(
@@ -213,11 +226,6 @@ export default {
         }
       });
     },
-    /**
-     * @param {String} title
-     * @param {String} description
-     * @param {String} type
-     */
     addNotification(title, description, type) {
       this.notificationInfo.push({ title, description, type });
       setTimeout(() => {
@@ -232,52 +240,151 @@ export default {
         rpm: 0,
       });
     },
-    validate() {
+    validateForm() {
       let isValid = true;
-      if (this.data.station.length < 2) {
-        this.errors.station =
-          "Названия должно содержать как минимум 2 символа.";
+
+      if (!this.data.station || this.data.station.trim().length < 2) {
+        this.errors.station = "Название должно содержать минимум 2 символа.";
         isValid = false;
       } else {
         this.errors.station = "";
       }
+
+      if (!this.data.flow || this.data.flow <= 0) {
+        this.errors.flow = "Расход должен быть больше нуля.";
+        isValid = false;
+      } else {
+        this.errors.flow = "";
+      }
+
+      if (!this.data.length || this.data.length <= 0) {
+        this.errors.length = "Длина участка должна быть больше нуля.";
+        isValid = false;
+      } else {
+        this.errors.length = "";
+      }
+
+      if (!this.data.density || this.data.density <= 0) {
+        this.errors.density = "Плотность должна быть больше нуля.";
+        isValid = false;
+      } else {
+        this.errors.density = "";
+      }
+
+      if (!this.data.viscosity || this.data.viscosity <= 0) {
+        this.errors.viscosity = "Вязкость должна быть больше нуля.";
+        isValid = false;
+      } else {
+        this.errors.viscosity = "";
+      }
+
+      if (
+        !this.data.diameter ||
+        this.data.diameter < 50 ||
+        this.data.diameter > 1500
+      ) {
+        this.errors.diameter =
+          "Диаметр должен быть в пределах от 50 до 1500 мм.";
+        isValid = false;
+      } else {
+        this.errors.diameter = "";
+      }
+
+      if (
+        !this.data.wallThickness ||
+        this.data.wallThickness < 2 ||
+        this.data.wallThickness > 20
+      ) {
+        this.errors.wallThickness =
+          "Толщина стенки должна быть в пределах от 2 до 20 мм.";
+        isValid = false;
+      } else {
+        this.errors.wallThickness = "";
+      }
+
+      if (
+        !this.data.roughness ||
+        this.data.roughness < 0.001 ||
+        this.data.roughness > 10
+      ) {
+        this.errors.roughness =
+          "Шероховатость должна быть в пределах от 0.001 до 10 мм.";
+        isValid = false;
+      } else {
+        this.errors.roughness = "";
+      }
+
+      if (
+        !this.data.pressure ||
+        this.data.pressure < 0.1 ||
+        this.data.pressure > 25
+      ) {
+        this.errors.pressure =
+          "Давление должно быть в пределах от 0.1 до 25 МПа.";
+        isValid = false;
+      } else {
+        this.errors.pressure = "";
+      }
+
       return isValid;
     },
-    validateForm(form) {
-      const isValidRotor = !!form.type || "Поле обязательно.";
-      const isValidPumpCount =
-        (!isNaN(Number(form.rpm)) && !!form.rpm) ||
-        "Должно быть числом.";
-      const isValidRotationSpeed =
-        (!isNaN(Number(form.numOfPumps)) && !!form.numOfPumps) ||
-        "Должно быть числом.";
-      const isValidPumpType = !!form.rotor || "Поле обязательно.";
-      return {
-        type: isValidRotor,
-        rotor: isValidPumpType,
-        numOfPumps: isValidRotationSpeed,
-        rpm: isValidPumpCount
-      };
-    },
+
     submitForm() {
-      const errors = this.pumps.map((form) => this.validateForm(form));
-      const isAllFormsValid = errors.every((error) =>
-        Object.values(error).every((value) => value === true)
+      const isMainFormValid = this.validateForm();
+      const arePumpsValid = this.validatePumps();
+      console.log(
+        "data:-->",
+        this.data,
+        "arePumpsValid:",
+        arePumpsValid,
+        "isMainFormValid--->",
+        isMainFormValid
       );
-      const isValid = isAllFormsValid && this.validate();
-      if (isValid) {
-        this.newStation.pumps = [...this.pumps];
-        this.newStation.station = this.data.station
-        this.newStation.flow = this.data.flow
-        this.addNewStation(this.newStation)
-        return true;
+      if (isMainFormValid && arePumpsValid) {
+        console.log("Форма отправлена успешно:", this.data);
+        this.notificationPost("Успех", "Форма успешно отправлена.", "success");
+      } else {
+        this.notificationPost("Ошибка", "Исправьте ошибки в форме.", "error");
       }
-      this.notificationPost(
-        "Ошибка при сохранении",
-        "Пожалуйста, заполните все необходимые поля перед сохранением.",
-        "error"
-      );
-      return false;
+    },
+
+    validatePumps() {
+      let isValid = true;
+      this.pumps.forEach((pump, index) => {
+        if (!pump.type) {
+          if (!this.errors.pumps) this.errors.pumps = [];
+          this.errors.pumps[index] = this.errors.pumps[index] || {};
+          this.errors.pumps[index].type = "Укажите тип насоса.";
+          isValid = false;
+        } else {
+          if (this.errors.pumps && this.errors.pumps[index]) {
+            this.errors.pumps[index].type = "";
+          }
+        }
+
+        if (!pump.rotor) {
+          if (!this.errors.pumps) this.errors.pumps = [];
+          this.errors.pumps[index] = this.errors.pumps[index] || {};
+          this.errors.pumps[index].rotor = "Укажите тип ротора.";
+          isValid = false;
+        } else {
+          if (this.errors.pumps && this.errors.pumps[index]) {
+            this.errors.pumps[index].rotor = "";
+          }
+        }
+
+        if (!pump.numOfPumps || pump.numOfPumps <= 0) {
+          if (!this.errors.pumps) this.errors.pumps = [];
+          this.errors.pumps[index] = this.errors.pumps[index] || {};
+          this.errors.pumps[index].numOfPumps = "Укажите количество насосов.";
+          isValid = false;
+        } else {
+          if (this.errors.pumps && this.errors.pumps[index]) {
+            this.errors.pumps[index].numOfPumps = "";
+          }
+        }
+      });
+      return isValid;
     },
   },
 };

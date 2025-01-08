@@ -88,14 +88,12 @@ import dialogPump from "../modals/PumpDialog.vue";
 import { useIndexStore } from "../../stores/index";
 import notifications from "../utils/NotificationComponent.vue";
 import { useNotification } from "naive-ui";
-import SelectComponents from "../SelectComponent.vue";
 
 export default {
   components: {
     dialogPump,
     notifications,
     useNotification,
-    SelectComponents,
   },
   computed: {
     stations() {

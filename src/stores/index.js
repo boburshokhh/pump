@@ -14,6 +14,16 @@ export const useIndexStore = defineStore("stationStore", {
             outputPressure: "8442 ",
             power: "50",
             afpType: "Тип 1",
+            liquidParameters:{
+              density:0,
+              viscosity:0
+            },
+            pipeParameters:{
+              diameter: 500,
+              wallThickness: 8,
+              roughness: 0.01,
+              pressure: 10,
+            }
         },
         {
             station: "Станция 2",
