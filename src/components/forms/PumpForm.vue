@@ -3,7 +3,22 @@
     <h3>Добавить насос</h3>
     <v-row v-for="(pump, index) in pumps" :key="index" class="pump-container">
       <v-col cols="12">
-        <h4>Насос {{ index + 1 }}</h4>
+        <div class="pump-header">
+          <h4>Насос {{ index + 1 }}</h4>
+          <n-dialog-provider>
+            <delete-dialog
+              v-if="index > 0"
+              color="red"
+              dialog-type="warning"
+              dialog-title="Подтверждение удаления"
+              dialog-content="Вы уверены, что хотите удалить этот насос? Это действие невозможно отменить."
+              positive-text="Удалить"
+              negative-text="Отмена"
+              :on-positive-click="deletePump"
+              :on-negative-click="closeDeleteDialog"
+            />
+          </n-dialog-provider>
+        </div>
       </v-col>
       <v-col cols="12" md="4">
         <v-text-field
@@ -43,10 +58,12 @@
 
 <script>
 import { VNumberInput } from "vuetify/labs/VNumberInput";
+import DeleteDialog from "../utils/DeleteDialog.vue";
 
 export default {
   components: {
     VNumberInput,
+    DeleteDialog,
   },
   props: {
     pumps: {
@@ -56,6 +73,29 @@ export default {
     errors: {
       type: Array,
       required: true,
+    },
+  },
+  data() {
+    return {
+      isDeleteDialogVisible: false,
+      pumpToDelete: null,
+    };
+  },
+  methods: {
+    confirmDelete(index) {
+      this.pumpToDelete = index;
+      this.isDeleteDialogVisible = true;
+    },
+    deletePump() {
+      if (this.pumpToDelete !== null) {
+        this.pumps.splice(this.pumpToDelete, 1);
+        this.errors.splice(this.pumpToDelete, 1);
+      }
+      this.closeDeleteDialog();
+    },
+    closeDeleteDialog() {
+      this.isDeleteDialogVisible = false;
+      this.pumpToDelete = null;
     },
   },
 };
@@ -70,7 +110,12 @@ export default {
   margin-left: 0;
   margin-right: 0;
 }
-.pump-add{
-  margin-top:12px
+.pump-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.pump-add {
+  margin-top: 12px;
 }
 </style>

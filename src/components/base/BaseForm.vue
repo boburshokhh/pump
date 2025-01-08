@@ -13,40 +13,7 @@
     </n-notification-provider>
 
     <h3>Параметры НПС</h3>
-    <v-row>
-      <v-col cols="12" md="4">
-        <v-text-field
-          v-model="data.station"
-          :counter="13"
-          :error-messages="errors.station"
-          label="Названия НПС"
-        ></v-text-field>
-      </v-col>
-      <v-col cols="12" md="4">
-        <v-number-input
-          v-model="data.flow"
-          :min="0"
-          :reverse="false"
-          control-variant="split"
-          label="Расход"
-          :error-messages="errors.flow"
-          :hideInput="false"
-          inset
-        ></v-number-input>
-      </v-col>
-      <v-col cols="12" md="4">
-        <v-number-input
-          v-model="data.length"
-          :min="0"
-          :reverse="false"
-          control-variant="split"
-          label="Длина участка, км"
-          :hideInput="false"
-          inset
-          :error-messages="errors.length"
-        ></v-number-input>
-      </v-col>
-    </v-row>
+    <StationParameters :data="data" :errors="errors" />
 
     <n-collapse v-model:expanded="expandedKeys">
       <n-collapse-item
@@ -59,7 +26,9 @@
         </div>
       </n-collapse-item>
     </n-collapse>
+
     <br />
+
     <n-collapse v-model:expanded="expandedKeys">
       <n-collapse-item
         title="Параметры трубы"
@@ -74,7 +43,6 @@
 
     <v-form ref="form" v-model="isFormValid">
       <PumpForm :pumps="pumps" :errors="errors.pumps" />
-      <!-- <p>{{ stations }}</p> -->
       <v-row class="justify-space-between">
         <v-col cols="auto">
           <v-btn
@@ -105,6 +73,7 @@ import notifications from "../utils/NotificationComponent.vue";
 import LiquidParameters from "../forms/LiquidParameters.vue";
 import PipeParameters from "../forms/PipeParameters.vue";
 import PumpForm from "../forms/PumpForm.vue";
+import StationParameters from "../forms/StationParameters.vue";
 
 export default {
   created() {
@@ -126,14 +95,12 @@ export default {
     LiquidParameters,
     PipeParameters,
     PumpForm,
+    StationParameters,
   },
   data() {
     return {
-      selectedOption: null,
       notificationInfo: [],
       isFormValid: false,
-      pumpSelect: null,
-      simpleOptions: ["Опция 1", "Опция 2", "Опция 3", "Опция 4"],
       pumps: [
         {
           type: "",
@@ -143,9 +110,9 @@ export default {
         },
       ],
       newStation: {
-        station: "Станция X",
-        flow: "250",
-        pumps: [{ type: "ПНС", rotor: "D-60", numOfPumps: 1, rpm: 1200 }],
+        station: "",
+        flow: "",
+        pumps: [{ type: "", rotor: "", numOfPumps: 0, rpm: 0 }],
         inputPressure: "2200",
         outputPressure: "7200",
         power: "55",
@@ -241,94 +208,66 @@ export default {
       });
     },
     validateForm() {
+      const validationRules = [
+        {
+          field: "station",
+          condition: (value) => value && value.trim().length >= 2,
+          message: "Название должно содержать минимум 2 символа.",
+        },
+        {
+          field: "flow",
+          condition: (value) => value > 0,
+          message: "Расход должен быть больше нуля.",
+        },
+        {
+          field: "length",
+          condition: (value) => value > 0,
+          message: "Длина участка должна быть больше нуля.",
+        },
+        {
+          field: "density",
+          condition: (value) => value > 0,
+          message: "Плотность должна быть больше нуля.",
+        },
+        {
+          field: "viscosity",
+          condition: (value) => value > 0,
+          message: "Вязкость должна быть больше нуля.",
+        },
+        {
+          field: "diameter",
+          condition: (value) => value >= 50 && value <= 1500,
+          message: "Диаметр должен быть в пределах от 50 до 1500 мм.",
+        },
+        {
+          field: "wallThickness",
+          condition: (value) => value >= 2 && value <= 20,
+          message: "Толщина стенки должна быть в пределах от 2 до 20 мм.",
+        },
+        {
+          field: "roughness",
+          condition: (value) => value >= 0.001 && value <= 10,
+          message: "Шероховатость должна быть в пределах от 0.001 до 10 мм.",
+        },
+        {
+          field: "pressure",
+          condition: (value) => value >= 0.1 && value <= 25,
+          message: "Давление должно быть в пределах от 0.1 до 25 МПа.",
+        },
+      ];
+
       let isValid = true;
 
-      if (!this.data.station || this.data.station.trim().length < 2) {
-        this.errors.station = "Название должно содержать минимум 2 символа.";
-        isValid = false;
-      } else {
-        this.errors.station = "";
-      }
-
-      if (!this.data.flow || this.data.flow <= 0) {
-        this.errors.flow = "Расход должен быть больше нуля.";
-        isValid = false;
-      } else {
-        this.errors.flow = "";
-      }
-
-      if (!this.data.length || this.data.length <= 0) {
-        this.errors.length = "Длина участка должна быть больше нуля.";
-        isValid = false;
-      } else {
-        this.errors.length = "";
-      }
-
-      if (!this.data.density || this.data.density <= 0) {
-        this.errors.density = "Плотность должна быть больше нуля.";
-        isValid = false;
-      } else {
-        this.errors.density = "";
-      }
-
-      if (!this.data.viscosity || this.data.viscosity <= 0) {
-        this.errors.viscosity = "Вязкость должна быть больше нуля.";
-        isValid = false;
-      } else {
-        this.errors.viscosity = "";
-      }
-
-      if (
-        !this.data.diameter ||
-        this.data.diameter < 50 ||
-        this.data.diameter > 1500
-      ) {
-        this.errors.diameter =
-          "Диаметр должен быть в пределах от 50 до 1500 мм.";
-        isValid = false;
-      } else {
-        this.errors.diameter = "";
-      }
-
-      if (
-        !this.data.wallThickness ||
-        this.data.wallThickness < 2 ||
-        this.data.wallThickness > 20
-      ) {
-        this.errors.wallThickness =
-          "Толщина стенки должна быть в пределах от 2 до 20 мм.";
-        isValid = false;
-      } else {
-        this.errors.wallThickness = "";
-      }
-
-      if (
-        !this.data.roughness ||
-        this.data.roughness < 0.001 ||
-        this.data.roughness > 10
-      ) {
-        this.errors.roughness =
-          "Шероховатость должна быть в пределах от 0.001 до 10 мм.";
-        isValid = false;
-      } else {
-        this.errors.roughness = "";
-      }
-
-      if (
-        !this.data.pressure ||
-        this.data.pressure < 0.1 ||
-        this.data.pressure > 25
-      ) {
-        this.errors.pressure =
-          "Давление должно быть в пределах от 0.1 до 25 МПа.";
-        isValid = false;
-      } else {
-        this.errors.pressure = "";
-      }
-
+      validationRules.forEach(({ field, condition, message }) => {
+        if (!condition(this.data[field])) {
+          this.errors[field] = message;
+          isValid = false;
+        } else {
+          this.errors[field] = "";
+        }
+      });
       return isValid;
     },
-
     submitForm() {
       const isMainFormValid = this.validateForm();
       const arePumpsValid = this.validatePumps();
