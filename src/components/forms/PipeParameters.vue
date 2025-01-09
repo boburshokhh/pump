@@ -64,6 +64,10 @@ export default {
         pressure: 10,
       }),
     },
+    editMode: {
+    type: Boolean,
+    default: false,
+  },
     errors: {
       type: Object,
       default: () => ({

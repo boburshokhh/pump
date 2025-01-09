@@ -35,6 +35,10 @@ export default {
       type: Object,
       default: () => ({}),
     },
+    editMode: {
+    type: Boolean,
+    default: false,
+  },
   },
   watch:{
     data(newVal,oldVal){

@@ -65,6 +65,10 @@
         type: Object,
         required: true,
       },
+      editMode: {
+    type: Boolean,
+    default: false,
+  },
       errors: {
         type: Object,
         required: true,

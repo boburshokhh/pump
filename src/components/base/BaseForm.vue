@@ -5,34 +5,30 @@
         :description="notification.description" :type="notification.type" :duration="5000"
         ref="notificationComponent" />
     </n-notification-provider>
-
-    <h3>Параметры НПС</h3>
-    <StationParameters :data="data" :errors="errors" />
-
+    <h3 v-if="!editMode">Параметры НПС</h3>
+    <StationParameters :data="data" :errors="errors" :editMode="editMode" />
     <n-collapse v-model:expanded="expandedKeys">
       <n-collapse-item title="Параметры жидкости" name="1"
         style="border: 1px solid #dcdcdc; border-radius: 8px; padding: 16px">
         <div>
-          <LiquidParameters :data="data" :errors="errors" />
+          <LiquidParameters :data="data" :errors="errors" :editMode="editMode" />
         </div>
       </n-collapse-item>
     </n-collapse>
 
     <br />
-
     <n-collapse v-model:expanded="expandedKeys">
       <n-collapse-item title="Параметры трубы" name="1"
         style="border: 1px solid #dcdcdc; border-radius: 8px; padding: 16px">
         <div>
-          <PipeParameters :data="data" :errors="errors" />
+          <PipeParameters :data="data" :errors="errors" :editMode="editMode" />
         </div>
       </n-collapse-item>
     </n-collapse>
 
     <v-form ref="form" v-model="isFormValid">
       <div>
-        <PumpForm v-model:pumps="pumps" :errors="errors.pumps" />
-
+        <PumpForm v-model:pumps="pumps" :errors="errors.pumps" :editMode="editMode" />
       </div>
       <v-row class="justify-space-between">
         <v-col cols="auto">
@@ -63,6 +59,10 @@ import StationParameters from "../forms/StationParameters.vue";
 
 export default {
   created() {
+    console.log("this.editMode && this.stationData:",this.editMode && this.stationData)
+    if (this.editMode && this.stationData) {
+      this.initializeEditMode();
+    }
     this.optionsStore = useOptionsStore();
     this.loadOptions();
   },
@@ -83,6 +83,21 @@ export default {
     PumpForm,
     StationParameters,
   },
+  props: {
+    pumpStationIndex:{
+      type:Number,
+      required:false
+    },
+    editMode: {
+      type: Boolean,
+      default: false,
+    },
+    stationData: {
+      type: Object,
+      default: () => null,
+    },
+  },
+
   data() {
     return {
       notificationInfo: [],
@@ -96,15 +111,6 @@ export default {
           rpm: 0,
         },
       ],
-      newStation: {
-        station: "",
-        flow: "",
-        pumps: [{ type: "", rotor: "", numOfPumps: 0, rpm: 0 }],
-        inputPressure: "2200",
-        outputPressure: "7200",
-        power: "55",
-        afpType: "Тип X",
-      },
       data: {
         station: "",
         flow: 0,
@@ -137,24 +143,31 @@ export default {
     };
   },
   methods: {
+    initializeEditMode() {
+    this.data = {
+      station: this.stationData.station || "",
+      flow: this.stationData.flow || 0,
+      density: this.stationData.liquidParameters?.density || 850,
+      viscosity: this.stationData.liquidParameters?.viscosity || 10,
+      diameter: this.stationData.pipeParameters?.diameter || 0,
+      wallThickness: this.stationData.pipeParameters?.wallThickness || 0,
+      roughness: this.stationData.pipeParameters?.roughness || 0,
+      pressure: this.stationData.pipeParameters?.pressure || 0,
+    };
+    this.pumps = [...(this.stationData.pumps || [])];
+  },
     addNewStation(item) {
       const store = useIndexStore();
       store.addStation(item);
     },
     deleteStation(index) {
-      const store = useStationStore();
+      const store = useIndexStore();
       store.stations.splice(index, 1);
       alert("Станция удалена!");
     },
-    editStation(index) {
-      const updatedStation = {
-        ...this.stations[index],
-        station: "Изменённая станция",
-        flow: "300",
-      };
-      const store = useStationStore();
-      store.updateStation(index, updatedStation);
-      alert("Станция обновлена!");
+    updateStation(index) {
+      const store = useIndexStore();
+      store.updateStation(index);
     },
 
     async loadOptions() {
@@ -260,17 +273,28 @@ export default {
     submitForm() {
       const isMainFormValid = this.validateForm();
       const arePumpsValid = this.validatePumps();
-      console.log(
-        "data:-->",
-        this.data,
-        "arePumpsValid:",
-        arePumpsValid,
-        "isMainFormValid--->",
-        isMainFormValid
-      );
       if (isMainFormValid && arePumpsValid) {
-        console.log("Форма отправлена успешно:", this.data);
-        this.notificationPost("Успех", "Форма успешно отправлена.", "success");
+        const updatedStation = {
+          ...this.data,
+          pumps: [...this.pumps],
+          liquidParameters: {
+            density: this.data.density,
+            viscosity: this.data.viscosity,
+          },
+          pipeParameters: {
+            diameter: this.data.diameter,
+            wallThickness: this.data.wallThickness,
+            roughness: this.data.roughness,
+            pressure: this.data.pressure,
+          },
+        };
+        if (this.editMode) {
+          this.notificationPost("Успех", "Данные станции обновлены.", "success");
+          this.updateStation(this.pumpStationIndex);
+        } else {
+          this.addNewStation(updatedStation);
+          this.notificationPost("Успех", "Новая станция добавлена.", "success");
+        }
       } else {
         this.notificationPost("Ошибка", "Исправьте ошибки в форме.", "error");
       }
