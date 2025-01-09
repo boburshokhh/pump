@@ -16,11 +16,11 @@ export default defineComponent({
   setup(props, { emit }) {
     const localShow = ref(props.show);
     const drawerWidth = ref("700px");
-    const isMobile = ref(false); // Флаг для определения мобильного устройства
+    const isMobile = ref(false); 
 
     const updateDrawerWidth = () => {
       const screenWidth = window.innerWidth;
-      isMobile.value = screenWidth < 768; // Определяем, мобильное устройство или нет
+      isMobile.value = screenWidth < 768; 
       if (isMobile.value) {
         drawerWidth.value = "100%";
       } else if (screenWidth < 1024) {
@@ -88,7 +88,6 @@ export default defineComponent({
   </n-flex>
   <n-drawer v-model:show="localShow" :width="drawerWidth" :placement="placement">
     <n-drawer-content>
-      <!-- Кнопка "Закрыть" только для мобильных устройств -->
       <div v-if="isMobile" class="mobile-close">
         <v-btn
           icon
@@ -111,6 +110,6 @@ export default defineComponent({
 }
 
 .close-btn {
-  color: var(--v-primary-base); /* Основной цвет кнопки */
+  color: var(--v-primary-base); 
 }
 </style>

@@ -1,26 +1,17 @@
 <template>
   <form @submit.prevent="submit">
     <n-notification-provider>
-      <notifications
-        v-for="(notification, index) in notificationInfo"
-        :key="index"
-        :title="notification.title"
-        :description="notification.description"
-        :type="notification.type"
-        :duration="5000"
-        ref="notificationComponent"
-      />
+      <notifications v-for="(notification, index) in notificationInfo" :key="index" :title="notification.title"
+        :description="notification.description" :type="notification.type" :duration="5000"
+        ref="notificationComponent" />
     </n-notification-provider>
 
     <h3>Параметры НПС</h3>
     <StationParameters :data="data" :errors="errors" />
 
     <n-collapse v-model:expanded="expandedKeys">
-      <n-collapse-item
-        title="Параметры жидкости"
-        name="1"
-        style="border: 1px solid #dcdcdc; border-radius: 8px; padding: 16px"
-      >
+      <n-collapse-item title="Параметры жидкости" name="1"
+        style="border: 1px solid #dcdcdc; border-radius: 8px; padding: 16px">
         <div>
           <LiquidParameters :data="data" :errors="errors" />
         </div>
@@ -30,11 +21,8 @@
     <br />
 
     <n-collapse v-model:expanded="expandedKeys">
-      <n-collapse-item
-        title="Параметры трубы"
-        name="1"
-        style="border: 1px solid #dcdcdc; border-radius: 8px; padding: 16px"
-      >
+      <n-collapse-item title="Параметры трубы" name="1"
+        style="border: 1px solid #dcdcdc; border-radius: 8px; padding: 16px">
         <div>
           <PipeParameters :data="data" :errors="errors" />
         </div>
@@ -42,15 +30,13 @@
     </n-collapse>
 
     <v-form ref="form" v-model="isFormValid">
-      <PumpForm :pumps="pumps" :errors="errors.pumps" />
+      <div>
+        <PumpForm v-model:pumps="pumps" :errors="errors.pumps" />
+
+      </div>
       <v-row class="justify-space-between">
         <v-col cols="auto">
-          <v-btn
-            outlined
-            color="secondary"
-            style="background-color: #333"
-            @click="addForm"
-          >
+          <v-btn outlined color="secondary" style="background-color: #333" @click="addForm">
             <v-icon left>mdi-plus</v-icon>
             Добавить насос
           </v-btn>
@@ -101,6 +87,7 @@ export default {
     return {
       notificationInfo: [],
       isFormValid: false,
+      expandedKeys: null,
       pumps: [
         {
           type: "",
@@ -200,13 +187,15 @@ export default {
       }, 5000);
     },
     addForm() {
-      this.pumps.push({
+      const newPump = {
         type: "",
         rotor: "",
         numOfPumps: 0,
         rpm: 0,
-      });
+      };
+      this.pumps.push(newPump);
     },
+
     validateForm() {
       const validationRules = [
         {
