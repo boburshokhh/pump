@@ -9,6 +9,11 @@ import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import '@mdi/font/css/materialdesignicons.css'; 
 import 'vuetify/styles'; 
+import Toast from "vue-toastification";
+// Import the CSS or use your own!
+import "vue-toastification/dist/index.css";
+
+
 
 const pinia = createPinia();
 const vuetify = createVuetify({
@@ -20,11 +25,11 @@ const vuetify = createVuetify({
 });
 
 const app = createApp(App)
-
 app.use(router)
 app.use(NaiveUI)
 app.use(vuetify)
 app.use(pinia)
+app.use(Toast); // Регистрация плагина
 app.mount('#app')
 
 import { useOptionsStore } from './stores/options';

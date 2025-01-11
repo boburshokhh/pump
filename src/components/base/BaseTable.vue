@@ -5,7 +5,7 @@
         :duration="5000" type="error" :asyncHandler="fetchData" />
     </n-notification-provider>
     <dialogPump />
-    <BaseEditForm v-model:dialog="isDialogOpen" :pumpStationIndex="pumpStationIndex" :station="pumpStation"/>
+    <BaseEditForm v-model:dialog="isDialogOpen" :pumpStationIndex="pumpStationIndex" :station="pumpStation" />
     <!-- <SelectComponents /> -->
     <n-flex justify="center">
       <n-table :bordered="true" :single-line="false">
@@ -25,9 +25,16 @@
         </thead>
         <tbody>
           <tr v-for="(item, index) in stations" :key="index">
-            <td @click="openDialog(index,item)">{{ item.station }}
+            <td @click="openDialog(index, item)">
+              <n-tooltip trigger="hover" placement="top">
+                <template #trigger>
+                  <span class="text-decoration-underline cursor-pointer">
+                    {{ item.station }}
+                  </span>
+                </template>
+                <span>Редактировать параметры станции</span>
+              </n-tooltip>
             </td>
-
             <td>{{ item.flow }}</td>
             <td>
           <tr v-for="(pump, pIndex) in item.pumps" :key="pIndex">
@@ -36,20 +43,20 @@
           </td>
           <td>
             <tr v-for="(pump, pIndex) in item.pumps" :key="pIndex">
-              <td class="custom-table-border">{{ pump.rotor }}</td>
+              <td class="custom-table-border ">{{ pump.rotor }}</td>
             </tr>
           </td>
           <td>
             <tr v-for="(pump, pIndex) in item.pumps" :key="pIndex">
-              <td class="custom-table-border">
-                <n-input-number :status="validNumOfPumps(pump.numOfPumps)" v-model:value="pump.numOfPumps" clearable />
+              <td class="custom-table-border" >
+                {{ pump.numOfPumps }}
               </td>
-            </tr>
+            </tr>            
           </td>
           <td>
             <tr v-for="(pump, pIndex) in item.pumps" :key="pIndex">
               <td class="custom-table-border">
-                <n-input-number :status="validNumOfPumps(pump.rpm)" v-model:value="pump.rpm" clearable />
+                {{ pump.rpm }}
               </td>
             </tr>
           </td>
@@ -84,7 +91,7 @@ export default {
     dialogPump,
     notifications,
     useNotification,
-    BaseEditForm
+    BaseEditForm,
   },
   computed: {
     stations() {
@@ -99,15 +106,15 @@ export default {
       notificationColor: "red",
       notificationComponent: null,
       isDialogOpen: false,
-      pumpStation:{},
-      pumpStationIndex:0
+      pumpStation: {},
+      pumpStationIndex: 0,
     };
   },
   methods: {
-    openDialog(index,station) {
-        this.isDialogOpen = true;
-        this.pumpStationIndex = index;
-        this.pumpStation = station
+    openDialog(index, station) {
+      this.isDialogOpen = true;
+      this.pumpStationIndex = index;
+      this.pumpStation = station;
     },
     async fetchData() {
       console.log("Fetching data...");
@@ -138,6 +145,10 @@ export default {
 .table-container {
   overflow-x: auto;
   max-width: 100%;
+}
+.custom-text-center{
+  justify-content: center;
+    display: grid;
 }
 
 @media (max-width: 768px) {

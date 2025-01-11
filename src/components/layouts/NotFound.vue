@@ -6,12 +6,11 @@
                 <n-result status="404" title="404 Не найдено" description="Знаете, жизнь всегда немного нелепа.">
                 </n-result>
             </div>
-            <n-space vertical size="large" align="center">
-                <n-text depth="3">Страница, которую вы ищете, не существует.</n-text>
-                <router-link to="/menu">
-                    <n-button type="primary" size="large">
+            <n-space vertical align="center">
+                <router-link to="/">
+                    <v-btn type="primary" size="small">
                         Вернуться на главную
-                    </n-button>
+                    </v-btn>
                 </router-link>
             </n-space>
         </n-layout-content>

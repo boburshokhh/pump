@@ -1,10 +1,6 @@
 <template>
   <form @submit.prevent="submit">
-    <n-notification-provider>
-      <notifications v-for="(notification, index) in notificationInfo" :key="index" :title="notification.title"
-        :description="notification.description" :type="notification.type" :duration="5000"
-        ref="notificationComponent" />
-    </n-notification-provider>
+    <testNotification ref="notification" />
     <h3 v-if="!editMode">Параметры НПС</h3>
     <StationParameters :data="data" :errors="errors" :editMode="editMode" />
     <n-collapse v-model:expanded="expandedKeys">
@@ -37,7 +33,7 @@
             Добавить насос
           </v-btn>
         </v-col>
-        <v-col cols="auto">
+        <v-col v-if="!editMode" cols="auto">
           <v-btn outlined color="primary" @click="submitForm">
             Сохранить
           </v-btn>
@@ -51,15 +47,17 @@
 import { useOptionsStore } from "/src/stores/options";
 import { useIndexStore } from "/src/stores/index";
 import { VNumberInput } from "vuetify/labs/VNumberInput";
-import notifications from "../utils/NotificationComponent.vue";
 import LiquidParameters from "../forms/LiquidParameters.vue";
 import PipeParameters from "../forms/PipeParameters.vue";
 import PumpForm from "../forms/PumpForm.vue";
 import StationParameters from "../forms/StationParameters.vue";
+import { useToast } from "vue-toastification";
+import testNotification from "../test/testNotification.vue";
+
+
 
 export default {
   created() {
-    console.log("this.editMode && this.stationData:",this.editMode && this.stationData)
     if (this.editMode && this.stationData) {
       this.initializeEditMode();
     }
@@ -77,16 +75,19 @@ export default {
   },
   components: {
     VNumberInput,
-    notifications,
+    // notifications,
+
     LiquidParameters,
     PipeParameters,
     PumpForm,
     StationParameters,
+    useToast,
+    testNotification
   },
   props: {
-    pumpStationIndex:{
-      type:Number,
-      required:false
+    pumpStationIndex: {
+      type: Number,
+      required: false
     },
     editMode: {
       type: Boolean,
@@ -100,7 +101,6 @@ export default {
 
   data() {
     return {
-      notificationInfo: [],
       isFormValid: false,
       expandedKeys: null,
       pumps: [
@@ -144,18 +144,18 @@ export default {
   },
   methods: {
     initializeEditMode() {
-    this.data = {
-      station: this.stationData.station || "",
-      flow: this.stationData.flow || 0,
-      density: this.stationData.liquidParameters?.density || 850,
-      viscosity: this.stationData.liquidParameters?.viscosity || 10,
-      diameter: this.stationData.pipeParameters?.diameter || 0,
-      wallThickness: this.stationData.pipeParameters?.wallThickness || 0,
-      roughness: this.stationData.pipeParameters?.roughness || 0,
-      pressure: this.stationData.pipeParameters?.pressure || 0,
-    };
-    this.pumps = [...(this.stationData.pumps || [])];
-  },
+      this.data = {
+        station: this.stationData.station || "",
+        flow: this.stationData.flow || 0,
+        density: this.stationData.liquidParameters?.density || 850,
+        viscosity: this.stationData.liquidParameters?.viscosity || 10,
+        diameter: this.stationData.pipeParameters?.diameter || 0,
+        wallThickness: this.stationData.pipeParameters?.wallThickness || 0,
+        roughness: this.stationData.pipeParameters?.roughness || 0,
+        pressure: this.stationData.pipeParameters?.pressure || 0,
+      };
+      this.pumps = [...(this.stationData.pumps || [])];
+    },
     addNewStation(item) {
       const store = useIndexStore();
       store.addStation(item);
@@ -165,39 +165,14 @@ export default {
       store.stations.splice(index, 1);
       alert("Станция удалена!");
     },
-    updateStation(index) {
+    updateStation(index, updatedStation) {
       const store = useIndexStore();
-      store.updateStation(index);
+      store.updateStation(index, updatedStation);
     },
 
     async loadOptions() {
       let res = await this.optionsStore.loadOptions();
       console.log("res", res);
-    },
-    notificationPost(title, description, type) {
-      if (!title || !description || !type) {
-        console.warn(
-          "Попытка создать пустое уведомление. Проверьте параметры."
-        );
-        return;
-      }
-      this.addNotification(title, description, type);
-      this.$nextTick(() => {
-        if (Array.isArray(this.$refs.notificationComponent)) {
-          const lastNotificationIndex = this.notificationInfo.length - 1;
-          const lastNotification =
-            this.$refs.notificationComponent[lastNotificationIndex];
-          if (lastNotification) {
-            lastNotification.triggerNotification();
-          }
-        }
-      });
-    },
-    addNotification(title, description, type) {
-      this.notificationInfo.push({ title, description, type });
-      setTimeout(() => {
-        this.notificationInfo.shift();
-      }, 5000);
     },
     addForm() {
       const newPump = {
@@ -273,31 +248,65 @@ export default {
     submitForm() {
       const isMainFormValid = this.validateForm();
       const arePumpsValid = this.validatePumps();
-      if (isMainFormValid && arePumpsValid) {
-        const updatedStation = {
-          ...this.data,
-          pumps: [...this.pumps],
-          liquidParameters: {
-            density: this.data.density,
-            viscosity: this.data.viscosity,
-          },
-          pipeParameters: {
-            diameter: this.data.diameter,
-            wallThickness: this.data.wallThickness,
-            roughness: this.data.roughness,
-            pressure: this.data.pressure,
-          },
-        };
-        if (this.editMode) {
-          this.notificationPost("Успех", "Данные станции обновлены.", "success");
-          this.updateStation(this.pumpStationIndex);
-        } else {
-          this.addNewStation(updatedStation);
-          this.notificationPost("Успех", "Новая станция добавлена.", "success");
-        }
-      } else {
-        this.notificationPost("Ошибка", "Исправьте ошибки в форме.", "error");
+
+      if (!isMainFormValid || !arePumpsValid) {
+        this.showNotification(
+          this.getNotificationOptions(
+            "Ошибка",
+            "Заполните все необходимые поля перед отправкой формы."
+          ),
+          { type: "error", timeout: 5000 }
+        );
+        return;
       }
+
+      const updatedStation = this.createStationData();
+      const notificationMessage = this.editMode
+        ? "Данные станции обновлены."
+        : "Новая станция добавлена.";
+
+      if (this.editMode) {
+        this.updateStation(this.pumpStationIndex, updatedStation);
+      } else {
+        this.addNewStation(updatedStation);
+      }
+
+      this.showNotification(
+        this.getNotificationOptions("Успех", notificationMessage),
+        { type: "success" }
+      );
+    },
+
+    createStationData() {
+      return {
+        ...this.data,
+        pumps: [...this.pumps],
+        liquidParameters: {
+          density: this.data.density,
+          viscosity: this.data.viscosity,
+        },
+        pipeParameters: {
+          diameter: this.data.diameter,
+          wallThickness: this.data.wallThickness,
+          roughness: this.data.roughness,
+          pressure: this.data.pressure,
+        },
+      };
+    },
+
+    getNotificationOptions(title, message) {
+      return {
+        title,
+        message,
+        titleTag: "h3",
+        messageTag: "span",
+        titleClass: "custom-title",
+        messageClass: "custom-message",
+      };
+    },
+
+    showNotification(options, config) {
+      this.$refs.notification.showNotification(options, config);
     },
 
     validatePumps() {

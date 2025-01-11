@@ -16,11 +16,11 @@ export default defineComponent({
   setup(props, { emit }) {
     const localShow = ref(props.show);
     const drawerWidth = ref("700px");
-    const isMobile = ref(false); 
+    const isMobile = ref(false);
 
     const updateDrawerWidth = () => {
       const screenWidth = window.innerWidth;
-      isMobile.value = screenWidth < 768; 
+      isMobile.value = screenWidth < 768;
       if (isMobile.value) {
         drawerWidth.value = "100%";
       } else if (screenWidth < 1024) {
@@ -71,29 +71,27 @@ export default defineComponent({
 </script>
 
 <template>
-  <n-flex :margin="16" justify="end">
-    <v-btn
-      class="ma-3"
-      variant="tonal"
-      color="primary"
-      :ripple="true"
-      @click="openDrawer"
-    >
+  <n-flex :margin="16" justify="space-between">
+    <v-btn class="ma-3" variant="tonal" color="success" :ripple="true" >
+      <v-icon icon="mdi-calculator" start size="25"></v-icon>
+      Рассчитать
+      <v-tooltip activator="parent" location="start">
+        Нажмите, чтобы выполнить расчет
+      </v-tooltip>
+    </v-btn>
+
+    <v-btn class="ma-3" variant="tonal" color="primary" :ripple="true" @click="openDrawer">
       <v-icon icon="mdi-plus" start size="25"></v-icon>
       Добавить
       <v-tooltip activator="parent" location="start">
-        Изменить параметры схемы
+        Добавить НПС 
       </v-tooltip>
     </v-btn>
   </n-flex>
   <n-drawer v-model:show="localShow" :width="drawerWidth" :placement="placement">
     <n-drawer-content>
       <div v-if="isMobile" class="mobile-close">
-        <v-btn
-          icon
-          @click="closeDrawer"
-          class="close-btn"
-        >
+        <v-btn icon @click="closeDrawer" class="close-btn">
           <v-icon icon="mdi-close" size="25"></v-icon>
         </v-btn>
       </div>
@@ -110,6 +108,6 @@ export default defineComponent({
 }
 
 .close-btn {
-  color: var(--v-primary-base); 
+  color: var(--v-primary-base);
 }
 </style>

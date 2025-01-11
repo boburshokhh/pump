@@ -1,5 +1,5 @@
 <template>
-  <n-space>
+  <n-space class="display-index">
     <v-btn :icon="icon" :color="color" @click="handleClick">
       <v-icon>{{ icon }}</v-icon>
     </v-btn>
@@ -74,7 +74,7 @@ export default defineComponent({
             props.onPositiveClick();
           }
           message.success("Успешно выполнено!");
-          emitDelete(); // Вызываем emit после положительного действия
+          emitDelete(); 
         },
         onNegativeClick: () => {
           if (props.onNegativeClick) {
@@ -98,5 +98,14 @@ export default defineComponent({
 </script>
 
 <style scoped>
-/* Добавьте стили, если необходимо */
+.display-index{
+  z-index: 9999;
+}
+.v-overlay{
+  z-index:2000 !important;
+}
+body > div.v-overlay-container > div.v-overlay.v-overlay--active.v-dialog {
+  z-index: 2000;
+}
+
 </style>

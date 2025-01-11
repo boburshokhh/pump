@@ -7,19 +7,17 @@ import Header from './components/layouts/Header.vue'
   <div id="app">
     <n-layout>
       <v-app>
-      <Header></Header>
-      <div class="mt-14 "></div>
-      <n-layout-content>
-        <n-message-provider>
-        <router-view />
-      </n-message-provider>
-      </n-layout-content>
-      <FooterComponent></FooterComponent>
-    </v-app>
+        <Header></Header>
+        <div class="mt-14 "></div>
+        <n-layout-content>
+          <n-message-provider>
+            <router-view />
+          </n-message-provider>
+        </n-layout-content>
+        <FooterComponent></FooterComponent>
+      </v-app>
     </n-layout>
   </div>
 </template>
 
-<style scoped>
-  
-</style>
+<style scoped></style>

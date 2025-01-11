@@ -14,7 +14,7 @@ export default {
     PumpChart,
   },
 };
+
 </script>
 
-<style>
-</style>
+<style></style>
