@@ -11,10 +11,10 @@
                         <v-btn text variant="primary" @click="saveDialog">Сохранить</v-btn>
                     </v-toolbar-items>
                 </v-toolbar>
-
                 <n-scrollbar style="max-height: 100%">
                     <v-sheet class="mx-auto pa-4" style="max-width: 80%">
-                        <formAddPump ref="formAddPumpRef" :pumpStationIndex="pumpStationIndex" :editMode="true" :stationData="station"/>
+                        <formAddPump ref="formAddPumpRef" :pumpStationIndex="pumpStationIndex" :editMode="true"
+                            :stationData="station" />
                     </v-sheet>
                 </n-scrollbar>
             </v-card>
@@ -71,8 +71,14 @@ export default {
             this.localDialog = false;
         },
         saveDialog() {
-            this.$refs.formAddPumpRef.submitForm();
-            // this.closeDialog()
+
+            const validateForm = this.$refs.formAddPumpRef.validateForm()
+            const validatePumps = this.$refs.formAddPumpRef.validatePumps()
+            this.$refs.formAddPumpRef.submitForm()
+            if (validateForm && validatePumps) {
+                this.closeDialog()
+            }
+
         },
         handleSaveData(data) {
             this.updateStation(data);
@@ -81,3 +87,9 @@ export default {
     },
 };
 </script>
+
+<style>
+.custom-dialog{
+    z-index: 2000 !important;
+}
+</style>
