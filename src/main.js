@@ -25,10 +25,10 @@ const vuetify = createVuetify({
 });
 
 const app = createApp(App)
+app.use(pinia)
 app.use(router)
 app.use(NaiveUI)
 app.use(vuetify)
-app.use(pinia)
 app.use(Toast); // Регистрация плагина
 app.mount('#app')
 

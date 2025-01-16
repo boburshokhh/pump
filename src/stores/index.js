@@ -5,15 +5,17 @@ export const useIndexStore = defineStore("stationStore", {
     stations: [
       {
         station: "Станция 1",
-        flow: "100",
+        flow: 2500,
         pumps: [
-          { type: "ПНС", rotor: "D-56(ПУУМ)", numOfPumps: 2, rpm: 980 },
-          { type: "МНС", rotor: "D-475", numOfPumps: 0, rpm: 2980 },
+          { id: 1, name: "HM 1250-260", numOfPumps: 2, rpm: 1200 },
+          { id: 2, name: "HM 2500-230", numOfPumps: 1, rpm: 1600 },
         ],
         inputPressure: "2345",
         outputPressure: "8442",
+        length: 100,
         power: "50",
         afpType: "Тип 1",
+        afp_consumption:10,
         liquidParameters: {
           density: 850,
           viscosity: 5.2,
@@ -27,15 +29,17 @@ export const useIndexStore = defineStore("stationStore", {
       },
       {
         station: "Станция 2",
-        flow: "200",
+        flow: 3000,
         pumps: [
-          { type: "ПНС", rotor: "D-56(ПУУМ)", numOfPumps: 2, rpm: 980 },
-          { type: "МНС", rotor: "D-475", numOfPumps: 0, rpm: 2980 },
+          { id: 5, name: "HM 3600-230", numOfPumps: 2, rpm: 1450 },
+          { id: 6, name: "HM 3600-230 (подача 2500 м3/ч)", numOfPumps: 1, rpm: 860 },
         ],
         inputPressure: "2545",
         outputPressure: "9442",
         power: "70",
+        length: 100,
         afpType: "Тип 2",
+        afp_consumption:110,
         liquidParameters: {
           density: 870,
           viscosity: 4.8,
@@ -49,14 +53,16 @@ export const useIndexStore = defineStore("stationStore", {
       },
       {
         station: "Станция 3",
-        flow: "150",
+        flow: 3000,
         pumps: [
-          { type: "Вихревой", rotor: "Тип C", numOfPumps: 1, rpm: 1400 },
+          { id: 8, name: "HM 5000-210", numOfPumps: 3, rpm: 3200 },
         ],
         inputPressure: "1580",
         outputPressure: "6334",
         power: "40",
         afpType: "Тип 3",
+        length: 121,
+        afp_consumption:100,
         liquidParameters: {
           density: 860,
           viscosity: 5.0,

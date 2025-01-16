@@ -29,5 +29,17 @@ export const useOptionsStore = defineStore('options', {
                 console.error('Ошибка при удалении опции:', error);
             }
         },
+        findOptionById(id) {
+            try {
+                const pump = pumps.centrifugal_pumps.find(option => option.id === id);
+                if (!pump) {
+                    console.warn(`Насос с ID ${id} не найден`);
+                }
+                return pump;
+            } catch (error) {
+                console.error('Ошибка при поиске насоса:', error);
+                return null;
+            }
+        },
     },
 });

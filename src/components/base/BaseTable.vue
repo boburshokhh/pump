@@ -1,9 +1,5 @@
 <template>
   <div class="table">
-    <n-notification-provider>
-      <notifications title="Ошибка" ref="notificationComponent" description="Заполните вся необходимые поля "
-        :duration="5000" type="error" :asyncHandler="fetchData" />
-    </n-notification-provider>
     <dialogPump />
     <BaseEditForm v-model:dialog="isDialogOpen" :pumpStationIndex="pumpStationIndex" :station="pumpStation" />
     <!-- <SelectComponents /> -->
@@ -13,14 +9,15 @@
           <tr>
             <th style="width: 8%">Станция</th>
             <th>Расход, м³/ч</th>
-            <th>Тип насоса</th>
-            <th style="width: 12%">Тип ротора</th>
+            <th>Длина участки, км</th>
+            <th>Расход АФП, км</th>
+            <th>Насосы</th>
             <th>Количество насосов</th>
             <th>Число оборотов</th>
             <th>Давление на входе МНС,<br />кПа</th>
             <th>Давление на выходе НПС,<br />кПа</th>
             <th>Затрачиваемая мощность, <br />кВт</th>
-            <th>Тип АФП</th>
+            <th>Параметры жидкости и трубы</th>
           </tr>
         </thead>
         <tbody>
@@ -36,25 +33,31 @@
               </n-tooltip>
             </td>
             <td>{{ item.flow }}</td>
+            <td>{{ item.length }}</td>
+            <td>{{ item.afp_consumption }}</td>
             <td>
-          <tr v-for="(pump, pIndex) in item.pumps" :key="pIndex">
-            <td class="custom-table-border">{{ pump.type }}</td>
+          <tr v-for="(pump) in item.pumps" :key="pump.id">
+            <td class="custom-table-border">
+              <n-tooltip trigger="hover" placement="top">
+                <template #trigger>
+                  <span @click="showPumpMoreInfo(pump)" class="text-decoration-underline cursor-pointer">
+                    {{ pump.name }}
+                  </span>
+                </template>
+                <span>Нажмите, чтобы увидеть данные насоса</span>
+              </n-tooltip>
+            </td>
           </tr>
           </td>
           <td>
-            <tr v-for="(pump, pIndex) in item.pumps" :key="pIndex">
-              <td class="custom-table-border ">{{ pump.rotor }}</td>
+            <tr v-for="(pump) in item.pumps" :key="pump.id">
+              <td class="custom-table-border">
+                {{ pump.numOfPumps }}
+              </td>
             </tr>
           </td>
           <td>
-            <tr v-for="(pump, pIndex) in item.pumps" :key="pIndex">
-              <td class="custom-table-border" >
-                {{ pump.numOfPumps }}
-              </td>
-            </tr>            
-          </td>
-          <td>
-            <tr v-for="(pump, pIndex) in item.pumps" :key="pIndex">
+            <tr v-for="(pump) in item.pumps" :key="pump.id">
               <td class="custom-table-border">
                 {{ pump.rpm }}
               </td>
@@ -70,28 +73,32 @@
             {{ item.power }}
           </td>
           <td>
-            {{ item.afpType }}
+            <PipeAndLiquidParameters :parameters="item" />
           </td>
           </tr>
         </tbody>
       </n-table>
+      <pumpInfo ref="pumpModal" v-if="showModalPump" @close="showModalPump = false" :parameters="selectedPumpId" />
     </n-flex>
+    <!-- <PipeAndLiquidParameters :parameters="selectedPipe" @close="showModalPipeAndLiquid = false"></PipeAndLiquidParameters> -->
   </div>
 </template>
 
 <script>
 import dialogPump from "../modals/PumpDialog.vue";
 import { useIndexStore } from "../../stores/index";
-import notifications from "../utils/NotificationComponent.vue";
 import { useNotification } from "naive-ui";
 import BaseEditForm from "./BaseEditForm.vue";
+import PipeAndLiquidParameters from "../table/PipeAndLiquidParameters.vue";
+import pumpInfo from "../modals/pumpInfo.vue"
 
 export default {
   components: {
     dialogPump,
-    notifications,
     useNotification,
     BaseEditForm,
+    PipeAndLiquidParameters,
+    pumpInfo
   },
   computed: {
     stations() {
@@ -108,6 +115,10 @@ export default {
       isDialogOpen: false,
       pumpStation: {},
       pumpStationIndex: 0,
+      showModalPipeAndLiquid: false,
+      selectedPipe: {},
+      selectedPumpId: null,
+      showModalPump:false
     };
   },
   methods: {
@@ -116,6 +127,10 @@ export default {
       this.pumpStationIndex = index;
       this.pumpStation = station;
     },
+    openPipeAndLiquidParameters(item) {
+      this.selectedPipe = item;
+      this.showModalPipeAndLiquid = true;
+    },
     async fetchData() {
       console.log("Fetching data...");
       await new Promise((resolve) => setTimeout(resolve, 10));
@@ -123,6 +138,17 @@ export default {
     },
     validNumOfPumps(value) {
       return value > 0 ? null : "error";
+    },
+    showPumpMoreInfo(pump) {
+        if (!pump || !pump.id) {
+            console.error("Неверные данные насоса:", pump);
+            return;
+        }
+        this.showModalPump= true;
+        this.selectedPumpId = pump.id;
+        setTimeout(()=>{
+            this.$refs.pumpModal.open();
+        },100)
     },
   },
 };
@@ -146,9 +172,10 @@ export default {
   overflow-x: auto;
   max-width: 100%;
 }
-.custom-text-center{
+
+.custom-text-center {
   justify-content: center;
-    display: grid;
+  display: grid;
 }
 
 @media (max-width: 768px) {

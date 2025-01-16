@@ -1,7 +1,7 @@
 <template>
 <div>
     <v-row>
-      <v-col cols="12" md="4">
+      <v-col cols="12" md="6">
         <v-text-field
           v-model="data.station"
           :counter="13"
@@ -9,7 +9,7 @@
           label="Названия НПС"
         ></v-text-field>
       </v-col>
-      <v-col cols="12" md="4">
+      <v-col cols="12" md="6">
         <v-number-input
           v-model="data.flow"
           :min="0"
@@ -21,7 +21,7 @@
           inset
         ></v-number-input>
       </v-col>
-      <v-col cols="12" md="4">
+      <v-col cols="12" md="6">
         <v-number-input
           v-model="data.length"
           :min="0"
@@ -31,6 +31,18 @@
           :hideInput="false"
           inset
           :error-messages="errors.length"
+        ></v-number-input>
+      </v-col>
+      <v-col cols="12" md="6">
+        <v-number-input
+          v-model="data.afp_consumption"
+          :min="0"
+          :reverse="false"
+          control-variant="split"
+          label="Расход АФП, км"
+          :hideInput="false"
+          inset
+          :error-messages="errors.afp_consumption"
         ></v-number-input>
       </v-col>
     </v-row>

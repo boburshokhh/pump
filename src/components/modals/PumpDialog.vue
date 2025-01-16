@@ -95,7 +95,7 @@ export default defineComponent({
           <v-icon icon="mdi-close" size="25"></v-icon>
         </v-btn>
       </div>
-      <formAddPump />
+      <formAddPump @close="closeDrawer"/>
     </n-drawer-content>
   </n-drawer>
 </template>

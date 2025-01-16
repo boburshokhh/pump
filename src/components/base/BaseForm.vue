@@ -1,6 +1,6 @@
 <template>
   <form @submit.prevent="submit">
-    <testNotification ref="notification" />
+    <Notification ref="notification" />
     <h3 v-if="!editMode">Параметры НПС</h3>
     <StationParameters :data="data" :errors="errors" :editMode="editMode" />
     <n-collapse v-model:expanded="expandedKeys">
@@ -52,7 +52,7 @@ import PipeParameters from "../forms/PipeParameters.vue";
 import PumpForm from "../forms/PumpForm.vue";
 import StationParameters from "../forms/StationParameters.vue";
 import { useToast } from "vue-toastification";
-import testNotification from "../test/testNotification.vue";
+import Notification from "../utils/Notification.vue";
 
 
 
@@ -82,7 +82,7 @@ export default {
     PumpForm,
     StationParameters,
     useToast,
-    testNotification
+    Notification
   },
   props: {
     pumpStationIndex: {
@@ -105,8 +105,7 @@ export default {
       expandedKeys: null,
       pumps: [
         {
-          type: "",
-          rotor: "",
+          name: "",
           numOfPumps: 0,
           rpm: 0,
         },
@@ -121,6 +120,7 @@ export default {
         wallThickness: 0,
         roughness: 0,
         pressure: 0,
+        afp_consumption: 0
       },
       errors: {
         station: "",
@@ -132,7 +132,8 @@ export default {
         wallThickness: "",
         roughness: "",
         pressure: "",
-        pumps: [{ type: "", rotor: "", numOfPumps: "" }],
+        afp_consumption: "",
+        pumps: [{ name: "", numOfPumps: "", rpm: "" }],
       },
       rules: {
         required: (value) => !!value || "Поле обязательно для заполнения.",
@@ -153,6 +154,8 @@ export default {
         wallThickness: this.stationData.pipeParameters?.wallThickness || 0,
         roughness: this.stationData.pipeParameters?.roughness || 0,
         pressure: this.stationData.pipeParameters?.pressure || 0,
+        afp_consumption: this.stationData.afp_consumption || 0,
+        length: this.stationData.length || 0,
       };
       this.pumps = [...(this.stationData.pumps || [])];
     },
@@ -176,8 +179,7 @@ export default {
     },
     addForm() {
       const newPump = {
-        type: "",
-        rotor: "",
+        name: "",
         numOfPumps: 0,
         rpm: 0,
       };
@@ -231,30 +233,64 @@ export default {
           condition: (value) => value >= 0.1 && value <= 25,
           message: "Давление должно быть в пределах от 0.1 до 25 МПа.",
         },
+        {
+          field: "afp_consumption",
+          condition: (value) => value > 0,
+          message: "Потребление AFP должно быть больше нуля.",
+        },
       ];
 
       let isValid = true;
 
       validationRules.forEach(({ field, condition, message }) => {
-        if (!condition(this.data[field])) {
+        const value = this.data[field];
+        if (!condition(value)) {
           this.errors[field] = message;
           isValid = false;
         } else {
           this.errors[field] = "";
         }
       });
+
       return isValid;
     },
+
+    /**
+   * 
+   * @param {String} title - Заголовок уведомления.
+   * @param {String} message - Сообщение уведомления.
+   * @returns {Object} Настройки уведомления.
+   */
+    getNotificationOptions(title, message) {
+      return {
+        title:title,
+        message:message,
+        titleTag: "h3",
+        messageTag: "span",
+        titleClass: "custom-title",
+        messageClass: "custom-message",
+      };
+    },
+
+    /**
+     * 
+     * @param {Object} options - Настройки текста уведомления.
+     * @param {Object} config - Настройки конфигурации уведомления.
+     */
+    showNotification(options, config = {}) {
+      this.$refs.notification.showNotification(options, config);
+    },
+
     submitForm() {
       const isMainFormValid = this.validateForm();
       const arePumpsValid = this.validatePumps();
-
+      console.log("isMainFormValid:", isMainFormValid,"arePumpsValid:", arePumpsValid);
       if (!isMainFormValid || !arePumpsValid) {
         this.showNotification(
-          this.getNotificationOptions(
-            "Ошибка",
-            "Заполните все необходимые поля перед отправкой формы."
-          ),
+          {
+            title: "Ошибка",
+            message: "Проверьте правильность заполнения формы.",
+          },
           { type: "error", timeout: 5000 }
         );
         return;
@@ -262,19 +298,31 @@ export default {
 
       const updatedStation = this.createStationData();
       const notificationMessage = this.editMode
-        ? "Данные станции обновлены."
-        : "Новая станция добавлена.";
+        ? "Данные станции успешно обновлены."
+        : "Новая станция успешно добавлена.";
 
-      if (this.editMode) {
-        this.updateStation(this.pumpStationIndex, updatedStation);
-      } else {
-        this.addNewStation(updatedStation);
+      try {
+        if (this.editMode) {
+          this.updateStation(this.pumpStationIndex, updatedStation);
+        } else {
+          this.addNewStation(updatedStation);
+        }
+
+        this.showNotification(
+          this.getNotificationOptions("Успех", notificationMessage),
+          { type: "success", timeout: 3000 }
+        );
+        this.$emit("close")
+      } catch (error) {
+        console.error("Ошибка при сохранении станции:", error);
+        this.showNotification(
+          this.getNotificationOptions(
+            "Ошибка",
+            "Произошла ошибка при сохранении данных. Повторите попытку позже."
+          ),
+          { type: "error", timeout: 5000 }
+        );
       }
-
-      this.showNotification(
-        this.getNotificationOptions("Успех", notificationMessage),
-        { type: "success" }
-      );
     },
 
     createStationData() {
@@ -294,43 +342,19 @@ export default {
       };
     },
 
-    getNotificationOptions(title, message) {
-      return {
-        title,
-        message,
-        titleTag: "h3",
-        messageTag: "span",
-        titleClass: "custom-title",
-        messageClass: "custom-message",
-      };
-    },
-
-    showNotification(options, config) {
-      this.$refs.notification.showNotification(options, config);
-    },
-
     validatePumps() {
       let isValid = true;
+      console.log("pump", this.pumps);
       this.pumps.forEach((pump, index) => {
-        if (!pump.type) {
+        
+        if (!pump.name) {
           if (!this.errors.pumps) this.errors.pumps = [];
           this.errors.pumps[index] = this.errors.pumps[index] || {};
-          this.errors.pumps[index].type = "Укажите тип насоса.";
+          this.errors.pumps[index].name = "Выберите насос.";
           isValid = false;
         } else {
           if (this.errors.pumps && this.errors.pumps[index]) {
-            this.errors.pumps[index].type = "";
-          }
-        }
-
-        if (!pump.rotor) {
-          if (!this.errors.pumps) this.errors.pumps = [];
-          this.errors.pumps[index] = this.errors.pumps[index] || {};
-          this.errors.pumps[index].rotor = "Укажите тип ротора.";
-          isValid = false;
-        } else {
-          if (this.errors.pumps && this.errors.pumps[index]) {
-            this.errors.pumps[index].rotor = "";
+            this.errors.pumps[index].name = "";
           }
         }
 
