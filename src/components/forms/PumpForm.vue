@@ -14,21 +14,9 @@
           </n-dialog-provider>
         </div>
       </v-col>
-      <!-- <v-col cols="12" md="6">
-        <v-text-field 
-          v-model="pump.type" 
-          :error-messages="errors[index]?.type" 
-          label="Тип насоса"
-        ></v-text-field>
-      </v-col> -->
       <v-col cols="12" md="12">
-        <!-- <v-text-field 
-          v-model="pump.rotor" 
-          :error-messages="errors[index]?.rotor" 
-          label="Тип ротора"
-        ></v-text-field> -->
-        <v-select autocomplete="off" @update:model-value="(value) => onUpdate(value, index)" v-model="selectedPump"
-          :item-props="itemProps" :items="options" label="Насос"></v-select>
+        <v-select autocomplete="off" @update:model-value="(value) => onUpdate(value, index)" :item-props="itemProps"
+          :items="options" v-model="selectedPumps[index]" label="Насос"></v-select>
       </v-col>
       <v-col cols="12" md="6">
         <v-number-input :min=0 v-model="pump.numOfPumps" :error-messages="errors[index]?.numOfPumps"
@@ -57,6 +45,15 @@ export default {
       options: optionsStore.selectOptions.centrifugal_pumps, // Передаем options сразу
     };
   },
+  mounted() {
+    if (this.editMode) {
+      // console.log("pumps:",this.pumps);
+
+      this.selectedPumps = this.options.filter(option =>
+        this.pumps.some(pump => pump.id === option.id)
+      );
+    }
+  },
   props: {
     editMode: {
       type: Boolean,
@@ -75,12 +72,12 @@ export default {
     return {
       isDeleteDialogVisible: false,
       pumpToDelete: null,
-      selectedPump: []
+      selectedPumps: []
     };
   },
   methods: {
-    onUpdate(value,index) {
-      console.log("Событие @update:model-value:", value, index);
+    onUpdate(value, index) {
+      // console.log("Событие @update:model-value:", value, index,"selectedPump",this.selectedPump);
       this.pumps[index].name = value.name;
       this.pumps[index].id = value.id;
     },
@@ -104,6 +101,11 @@ export default {
     closeDeleteDialog() {
       this.isDeleteDialogVisible = false;
       this.pumpToDelete = null;
+    },
+  },
+  watch: {
+    selectedPump(newVal) {
+      console.log("selectedPump", newVal);
     },
   },
 };

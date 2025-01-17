@@ -10,9 +10,11 @@ import Header from './components/layouts/Header.vue'
         <Header></Header>
         <div class="mt-14 "></div>
         <n-layout-content>
+          <n-dialog-provider>
           <n-message-provider>
             <router-view />
           </n-message-provider>
+        </n-dialog-provider>
         </n-layout-content>
         <FooterComponent></FooterComponent>
       </v-app>

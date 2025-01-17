@@ -3,8 +3,8 @@
     <dialogPump />
     <BaseEditForm v-model:dialog="isDialogOpen" :pumpStationIndex="pumpStationIndex" :station="pumpStation" />
     <!-- <SelectComponents /> -->
-    <n-flex justify="center">
-      <n-table :bordered="true" :single-line="false">
+    <n-flex justify="center" class="table-container">
+      <n-table :scroll-x="1000" :bordered="true" :single-line="false" >
         <thead>
           <tr>
             <th style="width: 8%">Станция</th>
@@ -168,24 +168,25 @@ export default {
   white-space: normal !important;
 }
 
-.table-container {
-  overflow-x: auto;
-  max-width: 100%;
+.table-wrapper {
+  overflow-x: auto; /* Добавляет горизонтальную прокрутку */
+  max-width: 100%; /* Ограничивает ширину для адаптивности */
 }
 
-.custom-text-center {
-  justify-content: center;
-  display: grid;
+.n-table th,
+.n-table td {
+  white-space: nowrap; /* Предотвращает перенос текста */
 }
 
 @media (max-width: 768px) {
-  .table-container table {
-    font-size: 14px;
+  .table-wrapper {
+    padding: 0 10px; /* Отступы для маленьких экранов */
   }
 
-  .table-container th,
-  .table-container td {
-    white-space: nowrap;
+  .n-table th,
+  .n-table td {
+    font-size: 12px; /* Уменьшаем шрифт для компактности */
   }
 }
+
 </style>

@@ -1,21 +1,42 @@
 <template>
   <form @submit.prevent="submit">
     <Notification ref="notification" />
+    <dialogClickCalck
+      :dialogTitle="dialogProps.dialogTitle"
+      :dialogContent="dialogProps.dialogContent"
+      :positiveText="dialogProps.positiveText"
+      :dialogType="dialogProps.dialogType"
+      :messageText="dialogProps.messageText"
+      :messageType="dialogProps.messageType"
+      :escMessageType="dialogProps.escMessageType"
+      :escMessage="dialogProps.escMessage"
+      ref="dialogClickCalck"
+    />
     <h3 v-if="!editMode">Параметры НПС</h3>
     <StationParameters :data="data" :errors="errors" :editMode="editMode" />
     <n-collapse v-model:expanded="expandedKeys">
-      <n-collapse-item title="Параметры жидкости" name="1"
-        style="border: 1px solid #dcdcdc; border-radius: 8px; padding: 16px">
+      <n-collapse-item
+        title="Параметры жидкости"
+        name="1"
+        style="border: 1px solid #dcdcdc; border-radius: 8px; padding: 16px"
+      >
         <div>
-          <LiquidParameters :data="data" :errors="errors" :editMode="editMode" />
+          <LiquidParameters
+            :data="data"
+            :errors="errors"
+            :editMode="editMode"
+          />
         </div>
       </n-collapse-item>
     </n-collapse>
 
     <br />
     <n-collapse v-model:expanded="expandedKeys">
-      <n-collapse-item title="Параметры трубы" name="1"
-        style="border: 1px solid #dcdcdc; border-radius: 8px; padding: 16px">
+      <n-collapse-item
+        title="Параметры трубы"
+        name="1"
+        style="border: 1px solid #dcdcdc; border-radius: 8px; padding: 16px"
+      >
         <div>
           <PipeParameters :data="data" :errors="errors" :editMode="editMode" />
         </div>
@@ -24,11 +45,20 @@
 
     <v-form ref="form" v-model="isFormValid">
       <div>
-        <PumpForm v-model:pumps="pumps" :errors="errors.pumps" :editMode="editMode" />
+        <PumpForm
+          v-model:pumps="pumps"
+          :errors="errors.pumps"
+          :editMode="editMode"
+        />
       </div>
       <v-row class="justify-space-between">
         <v-col cols="auto">
-          <v-btn outlined color="secondary" style="background-color: #333" @click="addForm">
+          <v-btn
+            outlined
+            color="secondary"
+            style="background-color: #333"
+            @click="addForm"
+          >
             <v-icon left>mdi-plus</v-icon>
             Добавить насос
           </v-btn>
@@ -53,8 +83,7 @@ import PumpForm from "../forms/PumpForm.vue";
 import StationParameters from "../forms/StationParameters.vue";
 import { useToast } from "vue-toastification";
 import Notification from "../utils/Notification.vue";
-
-
+import dialogClickCalck from "../utils/dialogClickCalck.vue";
 
 export default {
   created() {
@@ -65,6 +94,33 @@ export default {
     this.loadOptions();
   },
   computed: {
+    dialogProps() {
+      if (this.editMode) {
+        return {
+          dialogTitle: "Напоминание",
+          dialogContent:
+            "После изменения станции проверьте данные в таблице и не забудьте нажать кнопку 'Рассчитать'.",
+          positiveText: "Хорошо",
+          dialogType: "warning",
+          messageText: "Успешно",
+          messageType: "success",
+          escMessageType: "warning",
+          escMessage: "Нажимайте кнопку 'Хорошо' для закрытия диалога",
+        };
+      } else {
+        return {
+          dialogTitle: "Напоминание",
+          dialogContent:
+            "После добавления станции проверьте данные в таблице и не забудьте нажать кнопку 'Рассчитать'.",
+          positiveText: "Хорошо",
+          dialogType: "warning",
+          messageText: "Успешно",
+          messageType: "success",
+          escMessageType: "warning",
+          escMessage: "Нажимайте кнопку 'Хорошо' для закрытия диалога",
+        };
+      }
+    },
     pumpsOptions() {
       return this.optionsStore.selectOptions;
     },
@@ -75,19 +131,18 @@ export default {
   },
   components: {
     VNumberInput,
-    // notifications,
-
     LiquidParameters,
     PipeParameters,
     PumpForm,
     StationParameters,
     useToast,
-    Notification
+    Notification,
+    dialogClickCalck,
   },
   props: {
     pumpStationIndex: {
       type: Number,
-      required: false
+      required: false,
     },
     editMode: {
       type: Boolean,
@@ -120,7 +175,7 @@ export default {
         wallThickness: 0,
         roughness: 0,
         pressure: 0,
-        afp_consumption: 0
+        afp_consumption: 0,
       },
       errors: {
         station: "",
@@ -256,16 +311,16 @@ export default {
     },
 
     /**
-   * 
-   * @param {String} title - Заголовок уведомления.
-   * @param {String} message - Сообщение уведомления.
-   * @returns {Object} Настройки уведомления.
-   */
+     *
+     * @param {String} title - Заголовок уведомления.
+     * @param {String} message - Сообщение уведомления.
+     * @returns {Object} Настройки уведомления.
+     */
     getNotificationOptions(title, message) {
       return {
-        title:title,
-        message:message,
-        titleTag: "h3",
+        title: title,
+        message: message,
+        titleTag: "h5",
         messageTag: "span",
         titleClass: "custom-title",
         messageClass: "custom-message",
@@ -273,7 +328,7 @@ export default {
     },
 
     /**
-     * 
+     *
      * @param {Object} options - Настройки текста уведомления.
      * @param {Object} config - Настройки конфигурации уведомления.
      */
@@ -284,7 +339,7 @@ export default {
     submitForm() {
       const isMainFormValid = this.validateForm();
       const arePumpsValid = this.validatePumps();
-      console.log("isMainFormValid:", isMainFormValid,"arePumpsValid:", arePumpsValid);
+      this.$refs.dialogClickCalck.showDialog();
       if (!isMainFormValid || !arePumpsValid) {
         this.showNotification(
           {
@@ -312,7 +367,7 @@ export default {
           this.getNotificationOptions("Успех", notificationMessage),
           { type: "success", timeout: 3000 }
         );
-        this.$emit("close")
+        this.$emit("close");
       } catch (error) {
         console.error("Ошибка при сохранении станции:", error);
         this.showNotification(
@@ -346,7 +401,6 @@ export default {
       let isValid = true;
       console.log("pump", this.pumps);
       this.pumps.forEach((pump, index) => {
-        
         if (!pump.name) {
           if (!this.errors.pumps) this.errors.pumps = [];
           this.errors.pumps[index] = this.errors.pumps[index] || {};

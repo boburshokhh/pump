@@ -57,7 +57,6 @@ export default {
 }
 
 .text-body-2 {
-  font-size: 0.875rem;
-  color: #666;
+  font-size: 0.9rem;
 }
 </style>
