@@ -4,10 +4,10 @@
     <BaseEditForm v-model:dialog="isDialogOpen" :pumpStationIndex="pumpStationIndex" :station="pumpStation" />
     <!-- <SelectComponents /> -->
     <n-flex justify="center" class="table-container">
-      <n-table :scroll-x="1000" :bordered="true" :single-line="false" >
+      <n-table :bordered="true" :single-line="false" >
         <thead>
           <tr>
-            <th style="width: 8%">Станция</th>
+            <th>Станция</th>
             <th>Расход, м³/ч</th>
             <th>Длина участки, км</th>
             <th>Расход АФП, км</th>
@@ -168,10 +168,6 @@ export default {
   white-space: normal !important;
 }
 
-.table-wrapper {
-  overflow-x: auto; /* Добавляет горизонтальную прокрутку */
-  max-width: 100%; /* Ограничивает ширину для адаптивности */
-}
 
 .n-table th,
 .n-table td {

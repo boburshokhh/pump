@@ -18,7 +18,7 @@
       <n-collapse-item
         title="Параметры жидкости"
         name="1"
-        style="border: 1px solid #dcdcdc; border-radius: 8px; padding: 16px"
+        class="pa-4 rounded elevation-1"
       >
         <div>
           <LiquidParameters
@@ -35,7 +35,7 @@
       <n-collapse-item
         title="Параметры трубы"
         name="1"
-        style="border: 1px solid #dcdcdc; border-radius: 8px; padding: 16px"
+        class="pa-4 rounded elevation-1"
       >
         <div>
           <PipeParameters :data="data" :errors="errors" :editMode="editMode" />
@@ -339,7 +339,6 @@ export default {
     submitForm() {
       const isMainFormValid = this.validateForm();
       const arePumpsValid = this.validatePumps();
-      this.$refs.dialogClickCalck.showDialog();
       if (!isMainFormValid || !arePumpsValid) {
         this.showNotification(
           {
@@ -367,6 +366,7 @@ export default {
           this.getNotificationOptions("Успех", notificationMessage),
           { type: "success", timeout: 3000 }
         );
+        this.$refs.dialogClickCalck.showDialog();
         this.$emit("close");
       } catch (error) {
         console.error("Ошибка при сохранении станции:", error);

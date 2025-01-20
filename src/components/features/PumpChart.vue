@@ -1,21 +1,21 @@
 <template>
   <n-card>
-    <div style="position: relative;">
+    <div style="position: relative">
       <canvas id="pumpChart" ref="chartCanvas" />
       <v-btn
         icon="mdi mdi-file-download-outline"
         @click="saveChartAsImage"
-        style="position: absolute; top: 10px; right: 10px;"
+        style="position: absolute; top: 10px; right: 10px"
       />
 
       <v-btn
         icon="mdi mdi-magnify-minus-outline"
         @click="resetZoom"
-        style="position: absolute; top: 10px; left: 10px;"
+        style="position: absolute; top: 10px; left: 10px"
       >
       </v-btn>
     </div>
-    
+
     <!-- <n-space vertical>
       <n-slider v-model:value="range" range :step="1" />
       <n-space  justify="center">
@@ -41,11 +41,38 @@ export default defineComponent({
 
     // Исходные данные
     const originalData = reactive({
-      labels: ["100 км", "200 км", "300 км", "400 км", "500 км", "600 км","700 км","800 км"],
+      labels: [
+        "100 км",
+        "200 км",
+        "300 км",
+        "400 км",
+        "500 км",
+        "600 км",
+        "700 км",
+        "800 км",
+        "900 км",
+        "1000 км",
+        "1100 км",
+        "1200 км",
+        "1300 км",
+        "1400 км",
+        "1500 км",
+      ],
       datasets: [
         {
           label: "Гидравлический уклон",
-          data: [500, 400, 300, 200, 100, 500,400, 300, 200,100],
+          data: [
+            500, 400, 300, 200, 100, 500, 400, 300, 200, 100, 500, 400, 300,
+            200, 100,
+          ],
+          data: [
+            { x: 0, y: 500 }, // Точка 1
+            { x: 200, y: 400 }, // Точка 2
+            { x: 200, y: 300 }, // Точка 3
+            { x: 500, y: 200 }, // Точка 4
+            { x: 500, y: 100 },
+            { x: 500, y: 500 }, // Точка 1+
+          ],
           borderColor: "rgba(75, 192, 192, 1)",
           backgroundColor: "rgba(75, 192, 192, 0.2)",
           tension: 0,
@@ -75,11 +102,15 @@ export default defineComponent({
       })),
     });
 
-    const range = ref([0, 600]); 
+    const range = ref([0, 600]);
 
     const filterData = () => {
-      const minIndex = Math.floor((range.value[0] / 600) * originalData.labels.length);
-      const maxIndex = Math.ceil((range.value[1] / 600) * originalData.labels.length);
+      const minIndex = Math.floor(
+        (range.value[0] / 600) * originalData.labels.length
+      );
+      const maxIndex = Math.ceil(
+        (range.value[1] / 600) * originalData.labels.length
+      );
 
       filteredData.labels = originalData.labels.slice(minIndex, maxIndex);
       filteredData.datasets = originalData.datasets.map((dataset) => ({
@@ -131,16 +162,20 @@ export default defineComponent({
           },
           scales: {
             x: {
+              type: "linear", // Включение линейной шкалы для оси X
               title: {
                 display: true,
-                text: "Позиция",
+                text: "Позиция (км)",
               },
             },
             y: {
+              type: "linear", // Линейная шкала для оси Y
               title: {
                 display: true,
-                text: "Значение",
+                text: "Значение давления (м)",
               },
+              min: 0, // Минимальное значение (регулируйте при необходимости)
+              max: 600, // Максимальное значение (регулируйте в зависимости от данных)
             },
           },
         },

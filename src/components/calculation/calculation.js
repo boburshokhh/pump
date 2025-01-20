@@ -2,79 +2,115 @@
 import { useIndexStore } from "../../stores/index";
 import { useOptionsStore } from "../../stores/options";
 
-export function calculatePumpEfficiency(flowRate, pressure, power) {
+// Функция для получения данных о насосных станциях и параметрах трубопроводов
+function collectPumpStationData() {
     const storePumpsStations = useIndexStore();
-    const pumps = useOptionsStore();
-    const getPumpsList = pumps.selectOptions.centrifugal_pumps;
     const pumps_stations = storePumpsStations.getStations;
 
-    // Define arrays to store pump parameters
-    const aApprocPump = [];
-    const bApprocPump = [];
-    const pumpNumbers = [];
-    const nominalRotationalSpeeds = [];
-    const factRotationalSpeeds = [];
     const pumpIds = [];
-
-    //Pipe parameters
+    const pumpNumbers = [];
+    const factRotationalSpeeds = [];
     const lengthPipeline = [];
     const diameterPipe = [];
     const wallThicknessPipe = [];
     const roughnessPipe = [];
-    const afpConcentration = [];
     const pressurePipe = [];
-
-    //Liquid parameters
     const densityLiquid = [];
     const viscosityLiquid = [];
-
-    //consumption
     const consumptionStation = [];
-    const h_inlet_first_pump = 10;
-    // Collect pump IDs and their parameters from pump stations
+
     pumps_stations.forEach(station => {
         station.pumps.forEach(pump => {
-            pumpIds.push(pump.id); // Store pump IDs
-            pumpNumbers.push(pump.numOfPumps); // Store number of pumps
-            factRotationalSpeeds.push(pump.rpm); // Store nominal rotational speed
+            pumpIds.push(pump.id);
+            pumpNumbers.push(pump.numOfPumps);
+            factRotationalSpeeds.push(pump.rpm);
         });
-        //Pipe parameters store
-        lengthPipeline.push(station.length); // Store length of pipeline
-        diameterPipe.push(station.pipeParameters.diameter/1000); // Store diameter of pipe
-        wallThicknessPipe.push(station.pipeParameters.wallThickness/1000); // Store wall thickness of pipe
-        roughnessPipe.push(station.pipeParameters.roughness/1000); // Store roughness of pipe
-        pressurePipe.push(station.pipeParameters.pressure); // Store pressure of pipe
 
-        //Liquid parameters store
-        densityLiquid.push(station.liquidParameters.density); // Store density of liquid
-        viscosityLiquid.push(station.liquidParameters.viscosity); // Store viscosity of liquid
-        
-        //Consumption station parameters store
+        lengthPipeline.push(station.length);
+        diameterPipe.push(station.pipeParameters.diameter / 1000);
+        wallThicknessPipe.push(station.pipeParameters.wallThickness / 1000);
+        roughnessPipe.push(station.pipeParameters.roughness / 1000);
+        pressurePipe.push(station.pipeParameters.pressure);
+        densityLiquid.push(station.liquidParameters.density);
+        viscosityLiquid.push(station.liquidParameters.viscosity);
         consumptionStation.push(station.flow);
     });
 
-    // Filter the pumps that are in the selected pump list
-    const selectedPumps = getPumpsList.filter(pump => pumpIds.includes(pump.id));
+    return {
+        pumps_stations,
+        pumpIds,
+        pumpNumbers,
+        factRotationalSpeeds,
+        lengthPipeline,
+        diameterPipe,
+        wallThicknessPipe,
+        roughnessPipe,
+        pressurePipe,
+        densityLiquid,
+        viscosityLiquid,
+        consumptionStation,
+    };
+}
 
-    // Extract `a_approc` and `b_approc` parameters from the selected pumps
-    selectedPumps.forEach(pump => {
-        aApprocPump.push(pump.a_approc);
-        bApprocPump.push(pump.b_approc);
-        nominalRotationalSpeeds.push(pump.max_rpm);
-    });
+// Функция для получения массива pumpstationids
+function getPumpStationIds(pumps_stations) {
+    return pumps_stations.map(station =>
+        station.pumps.map(pump => pump.id)
+    );
+}
 
-    // Log the result for `a_approc` parameter
-    // console.log("lengthPipeline",lengthPipeline)
-    // console.log("diameterPipe",diameterPipe)
-    // console.log("wallThicknessPipe",wallThicknessPipe)
-    // console.log("roughnessPipe",roughnessPipe)
-    // console.log("afpConcentration",afpConcentration)
-    // console.log("pressurePipe",pressurePipe);
+// Функция для выбора насосов на основе pumpstationids
+function selectPumps(pumpstationids, getPumpsList) {
+    return pumpstationids.map(stationIds =>
+        stationIds.map(id => getPumpsList.find(pump => pump.id === id))
+    );
+}
+
+// Функция для расчёта напора на каждой станции
+function calculateDifferentialFlowRate(selectedPumps, pumps_stations, consumptionStation) {
+    return selectedPumps.map((pumps, i) => 
+        pumps.reduce((flowRate, pump, j) => {
+            const numOfPumps = pumps_stations[i].pumps[j].numOfPumps;
+            return flowRate + (pump.a_approc - pump.b_approc * Math.pow(consumptionStation[i], 2)) * numOfPumps;
+        }, 0)
+    );
+}
+
+// Функция для расчёта внутренних диаметров труб
+function calculateInternalDiameters(diameterPipe, wallThicknessPipe) {
+    return diameterPipe.map((diameter, i) => diameter - 2 * wallThicknessPipe[i]);
+}
+//Функция для расчёта скрость жидкости внутри трубы
+
+function calculateSpeed(densityLiquid, viscosityLiquid, d_internal) { 
     
-    // console.log("liquidDensity",densityLiquid,"liquidViscosity",viscosityLiquid);
-    // console.log("consumption",consumptionStation);
+}
 
-    // console.log("aApprocPump",aApprocPump);
-    // console.log("bApprocPump",bApprocPump);
-    // console.log("nominalRotationalSpeeds",nominalRotationalSpeeds);
+// Главная функция
+export function calculatePumpEfficiency(flowRate, pressure, power) {
+    const pumps = useOptionsStore();
+    const getPumpsList = pumps.selectOptions.centrifugal_pumps;
+
+    const {
+        pumps_stations,
+        pumpIds,
+        pumpNumbers,
+        factRotationalSpeeds,
+        lengthPipeline,
+        diameterPipe,
+        wallThicknessPipe,
+        roughnessPipe,
+        pressurePipe,
+        densityLiquid,
+        viscosityLiquid,
+        consumptionStation,
+    } = collectPumpStationData();
+
+    const pumpstationids = getPumpStationIds(pumps_stations);
+    const selectedPumps = selectPumps(pumpstationids, getPumpsList);
+    const differentialFlowRate = calculateDifferentialFlowRate(selectedPumps, pumps_stations, consumptionStation);
+    const d_internal = calculateInternalDiameters(diameterPipe, wallThicknessPipe);
+
+    console.log("d_internal", d_internal);
+    console.log("Differential Flow Rate", differentialFlowRate);
 }

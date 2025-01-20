@@ -1,29 +1,51 @@
 <template>
-  <div class="pump-edit">
-    <h3 v-if="editMode">Редактировать насосы</h3>
-    <h3 v-else>Добавить насос</h3>
-    <v-row v-for="(pump, index) in pumps" :key="pump.id" class="pump-container">
+  <div class="pump-edit mt-8">
+    <v-row v-for="(pump, index) in pumps" :key="pump.id" class="pump-container rounded elevation-1 pa-3 ">
       <v-col cols="12">
-        <div class="pump-header">
+        <div class="pump-header d-flex justify-space-between align-center">
           <h4>Насос {{ index + 1 }}</h4>
           <n-dialog-provider>
-            <delete-dialog v-if="index > 0" color="red" dialog-type="warning" dialog-title="Подтверждение удаления"
+            <delete-dialog
+              v-if="index > 0"
+              color="red"
+              dialog-type="warning"
+              dialog-title="Подтверждение удаления"
               dialog-content="Вы уверены, что хотите удалить этот насос? Это действие невозможно отменить."
-              positive-text="Удалить" negative-text="Отмена" :index="index" :onPositiveClick="() => deletePump(index)"
-              :onNegativeClick="closeDeleteDialog" @delete-clicked="confirmDelete" />
+              positive-text="Удалить"
+              negative-text="Отмена"
+              :index="index"
+              :onPositiveClick="() => deletePump(index)"
+              :onNegativeClick="closeDeleteDialog"
+              @delete-clicked="confirmDelete"
+            />
           </n-dialog-provider>
         </div>
       </v-col>
       <v-col cols="12" md="12">
-        <v-select autocomplete="off" @update:model-value="(value) => onUpdate(value, index)" :item-props="itemProps"
-          :items="options" v-model="selectedPumps[index]" label="Насос"></v-select>
+        <v-select
+          autocomplete="off"
+          @update:model-value="(value) => onUpdate(value, index)"
+          :item-props="itemProps"
+          :items="options"
+          v-model="selectedPumps[index]"
+          label="Насос"
+        ></v-select>
       </v-col>
       <v-col cols="12" md="6">
-        <v-number-input :min=0 v-model="pump.numOfPumps" :error-messages="errors[index]?.numOfPumps"
-          label="Кол-во насосов"></v-number-input>
+        <v-number-input
+          :min="0"
+          v-model="pump.numOfPumps"
+          :error-messages="errors[index]?.numOfPumps"
+          label="Кол-во насосов"
+        ></v-number-input>
       </v-col>
       <v-col cols="12" md="6">
-        <v-number-input :min=0 v-model="pump.rpm" :error-messages="errors[index]?.rpm" label="Обороты"></v-number-input>
+        <v-number-input
+          :min="0"
+          v-model="pump.rpm"
+          :error-messages="errors[index]?.rpm"
+          label="Обороты"
+        ></v-number-input>
       </v-col>
     </v-row>
   </div>
