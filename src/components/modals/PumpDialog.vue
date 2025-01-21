@@ -17,6 +17,7 @@ export default defineComponent({
     const localShow = ref(props.show);
     const drawerWidth = ref("700px");
     const isMobile = ref(false);
+    // const calculationStore = useCalculationStore();
 
     const updateDrawerWidth = () => {
       const screenWidth = window.innerWidth;
@@ -58,6 +59,10 @@ export default defineComponent({
       localShow.value = false;
     };
 
+    // const handleCalculate = () => {
+    //   calculationStore.calculatePumpEfficiency();
+    // };
+
     return {
       localShow,
       placement: "right",
@@ -65,6 +70,7 @@ export default defineComponent({
       isMobile,
       openDrawer,
       closeDrawer,
+      // handleCalculate,
     };
   },
 });

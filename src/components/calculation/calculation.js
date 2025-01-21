@@ -128,6 +128,16 @@ export function calculatePumpEfficiency(
         }
     }
 
-    return { head_loss, h_in, h_out }
+    // Обновляем возвращаемый объект, добавив все важные параметры
+    return {
+        head_loss,
+        h_in,
+        h_out,
+        lengthPipeline,
+        consumptionStation,
+        speed,
+        Re,
+        dh_pump
+    }
 }
 

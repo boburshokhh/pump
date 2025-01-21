@@ -30,76 +30,55 @@
 import { defineComponent, ref, onMounted, reactive, watch } from "vue";
 import Chart from "chart.js/auto";
 import zoomPlugin from "chartjs-plugin-zoom";
+import { calculatePumpEfficiency } from "../calculation/calculation";
 
 Chart.register(zoomPlugin);
 
 export default defineComponent({
   name: "PumpChart",
   setup() {
-    const chartCanvas = ref(null); // Реф для canvas элемента
+    const chartCanvas = ref(null);
     const chartInstance = ref(null);
+    const calculationsStore = calculatePumpEfficiency();
+    
+    const processData = (data) => {
+      const points = [];
+      let currentLength = 0;
+      
+      for (let i = 0; i < data.lengthPipeline.length; i++) {
+        points.push({
+          x: currentLength,
+          y: data.h_in[i]
+        });
+        
+        points.push({
+          x: currentLength,
+          y: data.h_out[i]
+        });
+        
+        currentLength += data.lengthPipeline[i];
+        
+        if (i < data.lengthPipeline.length - 1) {
+          points.push({
+            x: currentLength,
+            y: data.h_in[i + 1]
+          });
+        }
+      }
+      return points;
+    };
 
-    // Исходные данные
     const originalData = reactive({
-      labels: [
-        "100 км",
-        "200 км",
-        "300 км",
-        "400 км",
-        "500 км",
-        "600 км",
-        "700 км",
-        "800 км",
-        "900 км",
-        "1000 км",
-        "1100 км",
-        "1200 км",
-        "1300 км",
-        "1400 км",
-        "1500 км",
-      ],
       datasets: [
         {
           label: "Гидравлический уклон",
-          data: [
-            500, 400, 300, 200, 100, 500, 400, 300, 200, 100, 500, 400, 300,
-            200, 100,
-          ],
-          data: [
-            { x: 0, y: 500 }, // Точка 1
-            { x: 200, y: 400 }, // Точка 2
-            { x: 200, y: 300 }, // Точка 3
-            { x: 500, y: 200 }, // Точка 4
-            { x: 500, y: 100 },
-            { x: 500, y: 500 }, // Точка 1+
-          ],
+          data: processData(calculationsStore),
           borderColor: "rgba(75, 192, 192, 1)",
           backgroundColor: "rgba(75, 192, 192, 0.2)",
           tension: 0,
-        },
-        {
-          label: "Напор насоса",
-          data: [30, 35, 45, 51, 55, 50],
-          borderColor: "rgba(153, 102, 255, 1)",
-          backgroundColor: "rgba(153, 102, 255, 0.2)",
-          tension: 0,
-        },
-        {
-          label: "Статическая линия",
-          data: [50, 50, 50, 50, 50, 50],
-          borderColor: "rgba(255, 159, 64, 1)",
-          backgroundColor: "rgba(255, 159, 64, 0.2)",
-          tension: 0,
-        },
-      ],
-    });
-
-    const filteredData = reactive({
-      labels: [...originalData.labels],
-      datasets: originalData.datasets.map((dataset) => ({
-        ...dataset,
-        data: [...dataset.data],
-      })),
+          fill: false
+        }
+      ]
     });
 
     const range = ref([0, 600]);
@@ -112,19 +91,40 @@ export default defineComponent({
         (range.value[1] / 600) * originalData.labels.length
       );
 
-      filteredData.labels = originalData.labels.slice(minIndex, maxIndex);
-      filteredData.datasets = originalData.datasets.map((dataset) => ({
+      originalData.labels = originalData.labels.slice(minIndex, maxIndex);
+      originalData.datasets = originalData.datasets.map((dataset) => ({
         ...dataset,
         data: dataset.data.slice(minIndex, maxIndex),
       }));
     };
+
+    const updateChart = () => {
+      if (chartInstance.value) {
+        originalData.datasets[0].data = processData(calculationsStore);
+        chartInstance.value.update();
+      }
+    };
+
+    watch(
+      () => ({
+        h_in: [...calculationsStore.h_in],
+        h_out: [...calculationsStore.h_out],
+        lengthPipeline: [...calculationsStore.lengthPipeline],
+        head_loss: [...calculationsStore.head_loss]
+      }),
+      () => {
+        console.log(calculationsStore.h_in);
+        updateChart();
+      },
+      { deep: true }
+    );
 
     onMounted(() => {
       const ctx = chartCanvas.value.getContext("2d");
 
       chartInstance.value = new Chart(ctx, {
         type: "line",
-        data: filteredData,
+        data: originalData,
         options: {
           responsive: true,
           maintainAspectRatio: false,
@@ -139,8 +139,7 @@ export default defineComponent({
               intersect: false,
               callbacks: {
                 label: (context) => {
-                  const value = context.raw;
-                  return `Значение: ${value}`;
+                  return `Высота: ${context.raw.y} м`;
                 },
               },
             },
@@ -162,22 +161,25 @@ export default defineComponent({
           },
           scales: {
             x: {
-              type: "linear", // Включение линейной шкалы для оси X
+              type: "linear",
               title: {
                 display: true,
-                text: "Позиция (км)",
+                text: "Длина трубопровода (км)",
               },
             },
             y: {
-              type: "linear", // Линейная шкала для оси Y
+              type: "linear",
               title: {
                 display: true,
-                text: "Значение давления (м)",
+                text: "Напор (м)",
               },
-              min: 0, // Минимальное значение (регулируйте при необходимости)
-              max: 600, // Максимальное значение (регулируйте в зависимости от данных)
+              min: Math.min(...calculationsStore.h_in) * 0.9,
+              max: Math.max(...calculationsStore.h_out) * 1.1,
             },
           },
+          animation: {
+            duration: 500 
+          }
         },
       });
     });
@@ -211,6 +213,7 @@ export default defineComponent({
       saveChartAsImage,
       resetZoom,
       range,
+      updateChart 
     };
   },
 });
