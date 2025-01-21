@@ -16,6 +16,7 @@ export default {
   },
   mounted(){
     const calculation=calculatePumpEfficiency()
+    console.log(calculation)
   }
 };
 

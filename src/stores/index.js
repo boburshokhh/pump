@@ -7,71 +7,94 @@ export const useIndexStore = defineStore("stationStore", {
         station: "Станция 1",
         flow: 2500,
         pumps: [
-          { id: 1, name: "HM 1250-260", numOfPumps: 2, rpm: 1200 },
-          { id: 2, name: "HM 2500-230", numOfPumps: 1, rpm: 1600 },
+          { id: 1, name: "HM 1250-260", numOfPumps: 2, rpm: 2900 },
+          { id: 2, name: "HM 3600-230", numOfPumps: 2, rpm: 2850 }, // Используем фактическую скорость вращения
         ],
-        inputPressure: "2345",
-        outputPressure: "8442",
+        inputPressure: "1000", // Подставьте значение из расчета h_in[0]
+        outputPressure: "1100", // Подставьте значение из расчета h_out[0]
         length: 100,
-        power: "50",
+        power: "50", // Мощность можно рассчитать, если нужно
         afpType: "Тип 1",
-        afp_consumption:10,
+        afp_consumption: 10,
         liquidParameters: {
           density: 850,
-          viscosity: 5.2,
+          viscosity: 10,
         },
         pipeParameters: {
-          diameter: 500,
-          wallThickness: 8,
-          roughness: 0.01,
-          pressure: 10,
+          diameter: 720, // Умножаем на 1000, чтобы перевести в мм
+          wallThickness: 10, // Умножаем на 1000, чтобы перевести в мм
+          roughness: 0.1, // Умножаем на 1000, чтобы перевести в мм
+          pressure: 10, // Давление
         },
       },
       {
         station: "Станция 2",
-        flow: 3000,
+        flow: 3500,
         pumps: [
-          { id: 5, name: "HM 3600-230", numOfPumps: 2, rpm: 1450 },
-          { id: 6, name: "HM 3600-230 (подача 2500 м3/ч)", numOfPumps: 1, rpm: 860 },
+          { id: 2, name: "HM 3600-230", numOfPumps: 1, rpm: 2850 },
+          { id: 6, name: "HM 3600-230 (подача 2500 м³/ч)", numOfPumps: 1, rpm: 2850 },
         ],
-        inputPressure: "2545",
-        outputPressure: "9442",
+        inputPressure: "1100", // Подставьте значение из h_in[1]
+        outputPressure: "1200", // Подставьте значение из h_out[1]
+        length: 90,
         power: "70",
-        length: 100,
         afpType: "Тип 2",
-        afp_consumption:110,
+        afp_consumption: 15,
         liquidParameters: {
-          density: 870,
-          viscosity: 4.8,
+          density: 850,
+          viscosity: 10,
         },
         pipeParameters: {
-          diameter: 600,
+          diameter: 820,
           wallThickness: 10,
-          roughness: 0.012,
-          pressure: 12,
+          roughness: 0.1,
+          pressure: 11,
         },
       },
       {
         station: "Станция 3",
-        flow: 3000,
+        flow: 3500,
         pumps: [
-          { id: 8, name: "HM 5000-210", numOfPumps: 3, rpm: 3200 },
+          { id: 3, name: "HM 5000-210", numOfPumps: 2, rpm: 3000 },
         ],
-        inputPressure: "1580",
-        outputPressure: "6334",
-        power: "40",
+        inputPressure: "1200", // Подставьте значение из h_in[2]
+        outputPressure: "1300", // Подставьте значение из h_out[2]
+        length: 110,
+        power: "90",
         afpType: "Тип 3",
-        length: 121,
-        afp_consumption:100,
+        afp_consumption: 3,
         liquidParameters: {
-          density: 860,
-          viscosity: 5.0,
+          density: 850,
+          viscosity: 10,
         },
         pipeParameters: {
-          diameter: 550,
-          wallThickness: 9,
-          roughness: 0.011,
+          diameter: 820,
+          wallThickness: 10,
+          roughness: 0.1,
           pressure: 11,
+        },
+      },
+      {
+        station: "Станция 4",
+        flow: 3500,
+        pumps: [
+          { id: 3, name: "HM 2500-230 (подача 1800 м³/ч)", numOfPumps: 2, rpm: 2800 },
+        ],
+        inputPressure: "1300", // Подставьте значение из h_in[3]
+        outputPressure: "1400", // Подставьте значение из h_out[3]
+        length: 130 ,
+        power: "100",
+        afpType: "Тип 4",
+        afp_consumption: 8,
+        liquidParameters: {
+          density: 850,
+          viscosity: 10,
+        },
+        pipeParameters: {
+          diameter: 820,
+          wallThickness: 10,
+          roughness: 0.1,
+          pressure: 12,
         },
       },
     ],
@@ -84,7 +107,7 @@ export const useIndexStore = defineStore("stationStore", {
       this.stations.push(station);
     },
     updateStation(index, updatedStation) {
-        this.stations[index] = updatedStation;
-      }  
+      this.stations[index] = updatedStation;
+    },
   },
 });

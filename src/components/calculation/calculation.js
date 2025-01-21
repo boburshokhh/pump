@@ -1,116 +1,133 @@
-// utils/calculatePumpEfficiency.js
 import { useIndexStore } from "../../stores/index";
 import { useOptionsStore } from "../../stores/options";
 
-// Функция для получения данных о насосных станциях и параметрах трубопроводов
-function collectPumpStationData() {
+/**
+ * Функция для форматированного вывода массива значений
+ * @param {string} title - Название параметра
+ * @param {Array} array - Массив значений
+ * @param {string} units - Единицы измерения
+ */
+
+/**
+ * Расчет эффективности насосных станций
+ * @param {number} flowRate - Расход
+ * @param {number} pressure - Давление
+ * @param {number} power - Мощность
+ * @param {number} initialPressure - Начальное давление
+ * @param {number} temperature - Температура
+ */
+export function calculatePumpEfficiency(
+    flowRate,
+    pressure,
+    power,
+    initialPressure = 10,
+    temperature = 20
+) {
+    // Получение данных из хранилищ
     const storePumpsStations = useIndexStore();
+    const pumps = useOptionsStore();
+    const getPumpsList = pumps.selectOptions.centrifugal_pumps;
     const pumps_stations = storePumpsStations.getStations;
 
-    const pumpIds = [];
-    const pumpNumbers = [];
-    const factRotationalSpeeds = [];
-    const lengthPipeline = [];
-    const diameterPipe = [];
-    const wallThicknessPipe = [];
-    const roughnessPipe = [];
-    const pressurePipe = [];
-    const densityLiquid = [];
-    const viscosityLiquid = [];
-    const consumptionStation = [];
+    // Инициализация массивов для хранения параметров
+    const consumptionStation = [];     // Расход на станциях [м³/ч]
+    const d_internal = [];            // Внутренний диаметр труб [м]
+    const dh_pump = [];                  // Напор насосов [м]
+    const lengthPipeline = [];        // Длина трубопровода [км]
+    const diameterPipe = [];          // Наружный диаметр труб [м]
+    const wallThicknessPipe = [];     // Толщина стенки труб [м]
+    const roughnessPipe = [];         // Шероховатость труб [м]
+    const densityLiquid = [];         // Плотность жидкости [кг/м³]
+    const viscosityLiquid = [];       // Вязкость жидкости [сСт]
+    const speed = [];                 // Скорость потока [м/с]
 
-    pumps_stations.forEach(station => {
-        station.pumps.forEach(pump => {
-            pumpIds.push(pump.id);
-            pumpNumbers.push(pump.numOfPumps);
-            factRotationalSpeeds.push(pump.rpm);
-        });
+    // Константы
+    const g = 9.81;                   // Ускорение свободного падения [м/с²]
+    const dh_pns = 100;               // Подъём насоса [м]
+    const h_inlet_first_pump = 10;    // Напор на входе первого насоса [м]
 
+    // Массивы для промежуточных расчетов
+    const lam = [];                   // Коэффициент гидравлического сопротивления
+    const h_in = [];                  // Напор на входе станций [м]
+    const h_out = [];                 // Напор на выходе станций [м]
+    const head_loss = [];             // Потери напора [м]
+    const Re = [];                    // Число Рейнольдса
+
+    pumps_stations.forEach((station, index) => {
+        consumptionStation.push(station.flow);
         lengthPipeline.push(station.length);
         diameterPipe.push(station.pipeParameters.diameter / 1000);
         wallThicknessPipe.push(station.pipeParameters.wallThickness / 1000);
         roughnessPipe.push(station.pipeParameters.roughness / 1000);
-        pressurePipe.push(station.pipeParameters.pressure);
         densityLiquid.push(station.liquidParameters.density);
         viscosityLiquid.push(station.liquidParameters.viscosity);
-        consumptionStation.push(station.flow);
     });
 
-    return {
-        pumps_stations,
-        pumpIds,
-        pumpNumbers,
-        factRotationalSpeeds,
-        lengthPipeline,
-        diameterPipe,
-        wallThicknessPipe,
-        roughnessPipe,
-        pressurePipe,
-        densityLiquid,
-        viscosityLiquid,
-        consumptionStation,
-    };
-}
-
-// Функция для получения массива pumpstationids
-function getPumpStationIds(pumps_stations) {
-    return pumps_stations.map(station =>
+    // Определение насосов для каждой станции
+    const pumpstationids = pumps_stations.map(station =>
         station.pumps.map(pump => pump.id)
     );
-}
 
-// Функция для выбора насосов на основе pumpstationids
-function selectPumps(pumpstationids, getPumpsList) {
-    return pumpstationids.map(stationIds =>
+    const selectedPumps = pumpstationids.map(stationIds =>
         stationIds.map(id => getPumpsList.find(pump => pump.id === id))
     );
-}
 
-// Функция для расчёта напора на каждой станции
-function calculateDifferentialFlowRate(selectedPumps, pumps_stations, consumptionStation) {
-    return selectedPumps.map((pumps, i) => 
-        pumps.reduce((flowRate, pump, j) => {
+    // Расчёт напора для каждой станции
+    h_in[0] = h_inlet_first_pump + dh_pns
+    for (let i = 0; i < selectedPumps.length; i++) {
+        let stationFlow = 0;
+
+        selectedPumps[i].forEach((pump, j) => {
             const numOfPumps = pumps_stations[i].pumps[j].numOfPumps;
-            return flowRate + (pump.a_approc - pump.b_approc * Math.pow(consumptionStation[i], 2)) * numOfPumps;
-        }, 0)
-    );
+            const pumpFlow = (pump.a_approc - pump.b_approc * Math.pow(consumptionStation[i], 2)) * numOfPumps;
+            stationFlow += pumpFlow;
+        });
+
+        dh_pump.push(stationFlow);
+    }
+
+
+    // Расчёт внутренних диаметров труб
+    for (let i = 0; i < diameterPipe.length; i++) {
+        d_internal.push(diameterPipe[i] - 2 * wallThicknessPipe[i]);
+    }
+
+    // Расчет скорости потока
+    for (let i = 0; i < pumps_stations.length; i++) {
+        speed.push(4 * consumptionStation[i] / (3600 * Math.PI * Math.pow(d_internal[i], 2)));
+    }
+
+    // Расчет гидравлических параметров
+    for (let i = 0; i < pumps_stations.length; i++) {
+        // Расчет числа Рейнольдса
+        Re[i] = (speed[i] * d_internal[i]) / (viscosityLiquid[i] * 1e-6);
+
+        // Определение коэффициента гидравлического сопротивления
+        if (Re[i] < 2320) {
+            lam[i] = 64 / Re[i];
+        } else if (Re[i] >= 2320 && Re[i] <= 10000) {
+            const gamma = 1 - Math.exp(-0.002 * (Re[i] - 2320));
+            lam[i] = (64 / Re[i]) * (1 - gamma) + (0.3164 / Math.pow(Re[i], 0.25)) * gamma;
+        } else if (Re[i] >= 10000 && Re[i] < 27 * Math.pow(roughnessPipe[i] / d_internal[i], -1.143)) {
+            lam[i] = 0.3164 / Math.pow(Re[i], 0.25);
+        } else {
+            lam[i] = 0.11 * Math.pow(68 / Re[i] + roughnessPipe[i] / d_internal[i], 0.25);
+        }
+
+        // Расчет потерь напора
+        head_loss[i] = lam[i] * ((lengthPipeline[i] * 1000) / d_internal[i]) * (Math.pow(speed[i], 2) / (2 * g));
+    }
+
+
+    for (let i = 0; i < pumps_stations.length; i++) {
+        if (i == 0) {
+            h_out[i] = h_in[0] + dh_pump[i]
+        } else {
+            h_in[i] = h_out[i - 1] - head_loss[i - 1]
+            h_out[i] = h_in[i] + dh_pump[i]
+        }
+    }
+
+    return { head_loss, h_in, h_out }
 }
 
-// Функция для расчёта внутренних диаметров труб
-function calculateInternalDiameters(diameterPipe, wallThicknessPipe) {
-    return diameterPipe.map((diameter, i) => diameter - 2 * wallThicknessPipe[i]);
-}
-//Функция для расчёта скрость жидкости внутри трубы
-
-function calculateSpeed(densityLiquid, viscosityLiquid, d_internal) { 
-    
-}
-
-// Главная функция
-export function calculatePumpEfficiency(flowRate, pressure, power) {
-    const pumps = useOptionsStore();
-    const getPumpsList = pumps.selectOptions.centrifugal_pumps;
-
-    const {
-        pumps_stations,
-        pumpIds,
-        pumpNumbers,
-        factRotationalSpeeds,
-        lengthPipeline,
-        diameterPipe,
-        wallThicknessPipe,
-        roughnessPipe,
-        pressurePipe,
-        densityLiquid,
-        viscosityLiquid,
-        consumptionStation,
-    } = collectPumpStationData();
-
-    const pumpstationids = getPumpStationIds(pumps_stations);
-    const selectedPumps = selectPumps(pumpstationids, getPumpsList);
-    const differentialFlowRate = calculateDifferentialFlowRate(selectedPumps, pumps_stations, consumptionStation);
-    const d_internal = calculateInternalDiameters(diameterPipe, wallThicknessPipe);
-
-    console.log("d_internal", d_internal);
-    console.log("Differential Flow Rate", differentialFlowRate);
-}
