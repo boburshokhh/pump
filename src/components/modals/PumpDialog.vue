@@ -1,6 +1,7 @@
 <script>
 import { defineComponent, ref, watch, onMounted, onBeforeUnmount } from "vue";
 import formAddPump from "../base/BaseForm.vue";
+import { useCalculationsStore } from "../../stores/calculations";
 
 export default defineComponent({
   components: {
@@ -17,7 +18,7 @@ export default defineComponent({
     const localShow = ref(props.show);
     const drawerWidth = ref("700px");
     const isMobile = ref(false);
-    // const calculationStore = useCalculationStore();
+    const calculationsStore = useCalculationsStore();
 
     const updateDrawerWidth = () => {
       const screenWidth = window.innerWidth;
@@ -59,9 +60,11 @@ export default defineComponent({
       localShow.value = false;
     };
 
-    // const handleCalculate = () => {
-    //   calculationStore.calculatePumpEfficiency();
-    // };
+    const handleCalculate = () => {
+      console.log("Calculation started from PumpDialog");
+      calculationsStore.setCalculateClicked(true);
+      calculationsStore.updateCalculations();
+    };
 
     return {
       localShow,
@@ -70,7 +73,7 @@ export default defineComponent({
       isMobile,
       openDrawer,
       closeDrawer,
-      // handleCalculate,
+      handleCalculate,
     };
   },
 });
@@ -78,7 +81,13 @@ export default defineComponent({
 
 <template>
   <n-flex :margin="16" justify="space-between">
-    <v-btn class="ma-3" variant="tonal" color="success" :ripple="true" >
+    <v-btn
+      class="ma-3"
+      variant="tonal"
+      color="success"
+      :ripple="true"
+      @click="handleCalculate"
+    >
       <v-icon icon="mdi-calculator" start size="25"></v-icon>
       Рассчитать
       <v-tooltip activator="parent" location="start">
@@ -86,22 +95,30 @@ export default defineComponent({
       </v-tooltip>
     </v-btn>
 
-    <v-btn class="ma-3" variant="tonal" color="primary" :ripple="true" @click="openDrawer">
+    <v-btn
+      class="ma-3"
+      variant="tonal"
+      color="primary"
+      :ripple="true"
+      @click="openDrawer"
+    >
       <v-icon icon="mdi-plus" start size="25"></v-icon>
       Добавить
-      <v-tooltip activator="parent" location="start">
-        Добавить НПС 
-      </v-tooltip>
+      <v-tooltip activator="parent" location="start"> Добавить НПС </v-tooltip>
     </v-btn>
   </n-flex>
-  <n-drawer v-model:show="localShow" :width="drawerWidth" :placement="placement">
+  <n-drawer
+    v-model:show="localShow"
+    :width="drawerWidth"
+    :placement="placement"
+  >
     <n-drawer-content>
       <div v-if="isMobile" class="mobile-close">
         <v-btn icon @click="closeDrawer" class="close-btn">
           <v-icon icon="mdi-close" size="25"></v-icon>
         </v-btn>
       </div>
-      <formAddPump @close="closeDrawer"/>
+      <formAddPump @close="closeDrawer" />
     </n-drawer-content>
   </n-drawer>
 </template>

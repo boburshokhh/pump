@@ -16,13 +16,7 @@ import { useOptionsStore } from "../../stores/options";
  * @param {number} initialPressure - Начальное давление
  * @param {number} temperature - Температура
  */
-export function calculatePumpEfficiency(
-    flowRate,
-    pressure,
-    power,
-    initialPressure = 10,
-    temperature = 20
-) {
+export function calculatePumpEfficiency() {
     // Получение данных из хранилищ
     const storePumpsStations = useIndexStore();
     const pumps = useOptionsStore();
@@ -53,7 +47,7 @@ export function calculatePumpEfficiency(
     const head_loss = [];             // Потери напора [м]
     const Re = [];                    // Число Рейнольдса
 
-    pumps_stations.forEach((station, index) => {
+    pumps_stations.forEach((station) => {
         consumptionStation.push(station.flow);
         lengthPipeline.push(station.length);
         diameterPipe.push(station.pipeParameters.diameter / 1000);
@@ -128,7 +122,9 @@ export function calculatePumpEfficiency(
         }
     }
 
-    // Обновляем возвращаемый объект, добавив все важные параметры
+    const lastIndex = pumps_stations.length - 1;
+    h_in[lastIndex + 1] = h_out[lastIndex] - head_loss[lastIndex];
+    
     return {
         head_loss,
         h_in,

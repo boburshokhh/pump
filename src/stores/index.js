@@ -76,13 +76,13 @@ export const useIndexStore = defineStore("stationStore", {
       },
       {
         station: "Станция 4",
-        flow: 3500,
+        flow: 3100,
         pumps: [
           { id: 3, name: "HM 2500-230 (подача 1800 м³/ч)", numOfPumps: 2, rpm: 2800 },
         ],
         inputPressure: "1300", // Подставьте значение из h_in[3]
         outputPressure: "1400", // Подставьте значение из h_out[3]
-        length: 130 ,
+        length: 110 ,
         power: "100",
         afpType: "Тип 4",
         afp_consumption: 8,

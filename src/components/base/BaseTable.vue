@@ -104,6 +104,18 @@ export default {
     stations() {
       return this.stationStore.getStations;
     },
+    calculatedResults() {
+      const results = calculatePumpEfficiency();
+      return results.consumptionStation.map((consumption, index) => ({
+        consumption: consumption,
+        pumpHead: results.dh_pump[index],
+        inputHead: results.h_in[index],
+        outputHead: results.h_out[index],
+        headLoss: results.head_loss[index],
+        speed: results.speed[index],
+        reynoldsNumber: results.Re[index],
+      }));
+    }
   },
   data() {
     return {
