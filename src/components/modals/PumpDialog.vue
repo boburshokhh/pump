@@ -2,10 +2,11 @@
 import { defineComponent, ref, watch, onMounted, onBeforeUnmount } from "vue";
 import formAddPump from "../base/BaseForm.vue";
 import { useCalculationsStore } from "../../stores/calculations";
-
+import ResultCalc from "./ResultCalc.vue";
 export default defineComponent({
   components: {
     formAddPump,
+    ResultCalc,
   },
   props: {
     show: {
@@ -19,6 +20,7 @@ export default defineComponent({
     const drawerWidth = ref("700px");
     const isMobile = ref(false);
     const calculationsStore = useCalculationsStore();
+    const showResults = ref(false);
 
     const updateDrawerWidth = () => {
       const screenWidth = window.innerWidth;
@@ -64,6 +66,11 @@ export default defineComponent({
       console.log("Calculation started from PumpDialog");
       calculationsStore.setCalculateClicked(true);
       calculationsStore.updateCalculations();
+      showResults.value = true;
+    };
+
+    const viewResults = () => {
+      console.log("Showing calculation results");
     };
 
     return {
@@ -73,6 +80,8 @@ export default defineComponent({
       isMobile,
       openDrawer,
       closeDrawer,
+      showResults,
+      viewResults,
       handleCalculate,
     };
   },
@@ -81,19 +90,23 @@ export default defineComponent({
 
 <template>
   <n-flex :margin="16" justify="space-between">
-    <v-btn
-      class="ma-3"
-      variant="tonal"
-      color="success"
-      :ripple="true"
-      @click="handleCalculate"
-    >
-      <v-icon icon="mdi-calculator" start size="25"></v-icon>
-      Рассчитать
-      <v-tooltip activator="parent" location="start">
-        Нажмите, чтобы выполнить расчет
-      </v-tooltip>
-    </v-btn>
+    <div class="button-group">
+      <v-btn
+        class="ma-3"
+        variant="tonal"
+        color="success"
+        :ripple="true"
+        @click="handleCalculate"
+      >
+        <v-icon icon="mdi-calculator" start size="25"></v-icon>
+        Рассчитать
+        <v-tooltip activator="parent" location="start">
+          Нажмите, чтобы выполнить расчет
+        </v-tooltip>
+      </v-btn>
+
+      <ResultCalc v-if="showResults"/>
+    </div>
 
     <v-btn
       class="ma-3"
@@ -107,6 +120,9 @@ export default defineComponent({
       <v-tooltip activator="parent" location="start"> Добавить НПС </v-tooltip>
     </v-btn>
   </n-flex>
+
+
+
   <n-drawer
     v-model:show="localShow"
     :width="drawerWidth"
@@ -132,5 +148,10 @@ export default defineComponent({
 
 .close-btn {
   color: var(--v-primary-base);
+}
+
+.button-group {
+  display: flex;
+  align-items: center;
 }
 </style>

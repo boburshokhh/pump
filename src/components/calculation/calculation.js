@@ -124,7 +124,7 @@ export function calculatePumpEfficiency() {
 
     const lastIndex = pumps_stations.length - 1;
     h_in[lastIndex + 1] = h_out[lastIndex] - head_loss[lastIndex];
-    
+
     return {
         head_loss,
         h_in,
