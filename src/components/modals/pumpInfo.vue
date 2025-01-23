@@ -3,32 +3,50 @@
     activator="parent"
     @update:modelValue="handleDialogClose"
     v-model="isOpen"
-    max-width="40%"
+    :max-width="$vuetify.display.mdAndDown ? '95%' : '700px'"
+    transition="dialog-bottom-transition"
   >
     <template v-slot:default>
-      <v-card rounded="lg">
-        <v-card-title class="d-flex justify-space-between align-center">
-          <div class="text-medium-emphasis ps-2">Параметры насоса</div>
-          <v-btn icon="mdi-close" variant="text" @click="close"></v-btn>
+      <v-card rounded="lg" class="pump-info-card" elevation="8">
+        <v-card-title class="d-flex justify-space-between align-center pa-4">
+          <div class="text-h6 font-weight-medium primary--text">
+            Параметры насоса
+          </div>
+          <v-btn 
+            icon="mdi-close" 
+            variant="text" 
+            @click="close"
+            class="close-btn"
+            color="grey"
+          ></v-btn>
         </v-card-title>
-        <v-divider class="mb-4"></v-divider>
-        <n-flex justify="center" align="center">
-          <div class="table-container">
+        <v-divider></v-divider>
+        <v-card-text class="pa-4">
+          <div class="table-wrapper">
             <table class="vertical-table">
               <tbody>
-                <tr v-for="(column, index) in columns" :key="index">
-                  <th>{{ column.title }}</th>
-                  <td>{{ tableData[0]?.[column.key] || "—" }}</td>
+                <tr v-for="(column, index) in columns" 
+                    :key="index"
+                    class="table-row"
+                >
+                  <th class="label-cell">{{ column.title }}</th>
+                  <td class="value-cell">{{ tableData[0]?.[column.key] || "—" }}</td>
                 </tr>
               </tbody>
             </table>
           </div>
-        </n-flex>
-        <v-divider class="mt-2"></v-divider>
-        <v-card-actions class="my-2 d-flex justify-end">
-          <v-btn class="text-none" variant="tonal" rounded="xl" @click="close"
-            >Отмена</v-btn
+        </v-card-text>
+        <v-divider></v-divider>
+        <v-card-actions class="pa-4 d-flex justify-end">
+          <v-btn 
+            class="close-button" 
+            color="primary"
+            variant="tonal" 
+            rounded="xl" 
+            @click="close"
           >
+            Закрыть
+          </v-btn>
         </v-card-actions>
       </v-card>
     </template>
@@ -90,35 +108,89 @@ export default {
 };
 </script>
 
-<style>
-.table-container {
+<style scoped>
+.pump-info-card {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.table-wrapper {
+  margin: 0 auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   overflow-x: auto;
 }
 
 .vertical-table {
-  width: 90%;
-  border-collapse: collapse;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: white;
 }
 
-.vertical-table th {
+.table-row {
+  transition: background-color 0.2s ease;
+}
+
+.table-row:hover {
+  background-color: #f8f9fa;
+}
+
+.label-cell {
   text-align: left;
-  font-weight: bold;
-  padding: 8px;
-  background-color: #f9f9f9;
-  border: 1px solid #ddd;
+  font-weight: 600;
+  padding: 12px 16px;
+  background-color: #f5f7fa;
+  border: 1px solid #e9ecef;
+  color: #2c3e50;
   white-space: nowrap;
+  min-width: 200px;
 }
 
-.vertical-table td {
-  padding: 8px;
-  border: 1px solid #ddd;
-  white-space: nowrap;
+.value-cell {
+  padding: 12px 16px;
+  border: 1px solid #e9ecef;
+  color: #34495e;
+}
+
+.close-btn {
+  transition: transform 0.2s ease;
+}
+
+.close-btn:hover {
+  transform: rotate(90deg);
+}
+
+.close-button {
+  transition: all 0.2s ease;
+}
+
+.close-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 @media (max-width: 768px) {
-  .vertical-table th,
-  .vertical-table td {
-    font-size: 12px;
+  .label-cell,
+  .value-cell {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+
+  .label-cell {
+    min-width: 160px;
+  }
+}
+
+@media (max-width: 480px) {
+  .label-cell,
+  .value-cell {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+  }
+
+  .label-cell {
+    min-width: 140px;
   }
 }
 </style>
