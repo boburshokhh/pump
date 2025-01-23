@@ -3,7 +3,7 @@
     <v-col>
       <v-number-input
         v-model="data.density"
-        :error-messages="errors.density"
+        :error-messages="errors.density ? [errors.density] : []"
         label="Плотность, кг/м³"
         control-variant="split"
       ></v-number-input>
@@ -11,7 +11,7 @@
     <v-col>
       <v-number-input
         v-model="data.viscosity"
-        :error-messages="errors.viscosity"
+        :error-messages="errors.viscosity ? [errors.viscosity] : []"
         label="Вязкость, сСт"
         control-variant="split"
       ></v-number-input>
@@ -19,8 +19,8 @@
   </v-row>
 </template>
   
-  <script>
-  import { VNumberInput } from "vuetify/labs/VNumberInput";
+<script>
+import { VNumberInput } from "vuetify/labs/VNumberInput";
 
 export default {
   components:{
@@ -42,10 +42,10 @@ export default {
   },
   watch:{
     data(newVal,oldVal){
-      console.log("data_newVal:",newVal)
+      // Удалите console.log, если он не нужен
     },
     errors(newVal,oldVal){
-      console.log("errors_newVal:",newVal)
+      // Удалите console.log, если он не нужен
     },
   }
 };

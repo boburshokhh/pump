@@ -1,20 +1,51 @@
 <template>
-    <n-layout class="not-found-layout">
-        <div class="mt-14"></div>
-        <n-layout-content class="not-found-content">
-            <div class="icon-wrapper">
-                <n-result status="404" title="404 Не найдено" description="Знаете, жизнь всегда немного нелепа.">
-                </n-result>
-            </div>
-            <n-space vertical align="center">
-                <router-link to="/">
-                    <v-btn type="primary" size="small">
-                        Вернуться на главную
-                    </v-btn>
-                </router-link>
-            </n-space>
-        </n-layout-content>
-    </n-layout>
+    <v-container fluid class="not-found-layout">
+        <v-row align="center" justify="center" class="fill-height">
+            <v-col cols="12" sm="8" md="6" lg="4">
+                <v-card
+                    class="not-found-card"
+                    elevation="0"
+                    :style="{ backgroundColor: 'transparent' }"
+                >
+                    <v-card-text class="text-center">
+                        <v-scale-transition>
+                            <div class="text-h1 font-weight-bold primary--text mb-6">
+                                404
+                            </div>
+                        </v-scale-transition>
+                        
+                        <v-fade-transition>
+                            <div class="text-h4 mb-6">
+                                Страница не найдена
+                            </div>
+                        </v-fade-transition>
+                        
+                        <v-fade-transition>
+                            <div class="text-subtitle-1 mb-8 text-medium-emphasis">
+                                Знаете, жизнь всегда немного нелепа. Но не волнуйтесь, вы можете вернуться на главную страницу.
+                            </div>
+                        </v-fade-transition>
+
+                        <v-hover v-slot="{ isHovering, props }">
+                            <router-link to="/" class="text-decoration-none">
+                                <v-btn
+                                    v-bind="props"
+                                    size="large"
+                                    color="primary"
+                                    :elevation="isHovering ? 4 : 1"
+                                    class="px-8"
+                                    :class="{ 'scale-button': isHovering }"
+                                >
+                                    Вернуться на главную
+                                    <v-icon end icon="mdi-arrow-right" class="ml-2"></v-icon>
+                                </v-btn>
+                            </router-link>
+                        </v-hover>
+                    </v-card-text>
+                </v-card>
+            </v-col>
+        </v-row>
+    </v-container>
 </template>
 
 <script>
@@ -25,23 +56,31 @@ export default {
 
 <style scoped>
 .not-found-layout {
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: var(--n-color-body);
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
-.not-found-content {
-    max-width: 400px;
-    text-align: center;
+.scale-button {
+    transform: scale(1.05);
+    transition: all 0.3s ease;
 }
 
-.not-found-card {
-    padding: 24px;
+.v-scale-transition-enter-active,
+.v-scale-transition-leave-active,
+.v-fade-transition-enter-active,
+.v-fade-transition-leave-active {
+    transition: all 0.5s ease;
 }
 
-.icon-wrapper {
-    margin-bottom: 16px;
+.v-scale-transition-enter-from,
+.v-scale-transition-leave-to {
+    opacity: 0;
+    transform: scale(0.5);
+}
+
+.v-fade-transition-enter-from,
+.v-fade-transition-leave-to {
+    opacity: 0;
+    transform: translateY(20px);
 }
 </style>

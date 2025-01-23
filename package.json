@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
+    "@vicons/ionicons5": "^0.13.0",
+    "@vicons/tabler": "^0.13.0",
     "chart.js": "^4.4.7",
     "chartjs-plugin-zoom": "^2.2.0",
     "jspdf": "^2.5.2",
