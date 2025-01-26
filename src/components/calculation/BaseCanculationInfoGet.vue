@@ -21,7 +21,7 @@
                             </v-tooltip>
                         </v-btn>
 
-                        <div class="actions-right">
+                        <!-- <div class="actions-right">
                             <v-btn
                                 variant="text"
                                 color="primary"
@@ -32,7 +32,7 @@
                             >
                                 Обновить
                             </v-btn>
-                        </div>
+                        </div> -->
                     </v-card-actions>
                     <v-divider></v-divider>
                     <v-card-text>
@@ -54,7 +54,7 @@
                                             <div class="d-flex align-center">
                                                 <v-icon icon="mdi-pump" color="primary" class="mr-3"></v-icon>
                                                 <div>
-                                                    <div class="text-subtitle-1">Станция {{ index + 1 }}</div>
+                                                    <div class="text-subtitle-1">{{pumpStations[index].station}}</div>
                                                     <div class="text-caption text-medium-emphasis">
                                                         Расход: {{ formatNumber(pumpResults.consumptionStation[index]) }} м³/ч
                                                     </div>
@@ -115,28 +115,6 @@
                 </v-card>
             </v-col>
         </v-row>
-
-        <!-- Диалог для графика -->
-        <v-dialog v-model="chartDialog" max-width="800">
-            <v-card>
-                <v-card-title class="headline">
-                    График параметров станций
-                    <v-btn
-                        icon="mdi-close"
-                        variant="text"
-                        size="small"
-                        @click="chartDialog = false"
-                        class="float-right"
-                    ></v-btn>
-                </v-card-title>
-                <v-card-text>
-                    <!-- Здесь можно добавить компонент с графиком -->
-                    <div class="chart-container">
-                        График в разработке...
-                    </div>
-                </v-card-text>
-            </v-card>
-        </v-dialog>
     </div>
 </template>
 
@@ -153,7 +131,7 @@ export default {
         const indexStore = useIndexStore();
         const optionsStore = useOptionsStore();
         const calculationsStore = useCalculationsStore();
-        
+        const pumpStations = computed(() => indexStore.getStations);
         const pumpResults = computed(() => calculationsStore.getPumpResults);
         const isExporting = ref(false);
         const chartDialog = ref(false);
@@ -221,6 +199,7 @@ export default {
 
         return {
             pumpResults,
+            pumpStations,
             formatNumber,
             isCalculating: computed(() => calculationsStore.getIsCalculating),
             exportFormats,
@@ -238,7 +217,9 @@ export default {
 .v-card--variant-elevated {
     box-shadow: none;
 }
-
+.v-card-actions{
+    padding: 1rem !important;
+}
 .v-expansion-panel-title {
     padding: 12px 20px !important;
 }

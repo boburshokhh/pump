@@ -55,9 +55,6 @@ export default {
         dialog(newVal) {
             this.localDialog = newVal;
         },
-        station(newVal) {
-            console.log("station:", newVal);
-        },
         localDialog(newVal) {
             this.$emit("update:dialog", newVal);
         },

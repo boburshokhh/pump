@@ -6,8 +6,7 @@
             "type": "Центробежный",
             "max_capacity_m3_per_hour": 1250,
             "min_capacity_m3_per_hour": 125,
-            "max_rpm": 2900,
-            "min_rpm": 1000,
+            "nominal_rotation_speed": 3000,
             "efficiency_percent": 85,
             "a_approc": 331,
             "b_approc": 0.451e-4
@@ -18,8 +17,7 @@
             "type": "Центробежный",
             "max_capacity_m3_per_hour": 2500,
             "min_capacity_m3_per_hour": 250,
-            "max_rpm": 3000,
-            "min_rpm": 1100,
+            "nominal_rotation_speed": 3000,
             "efficiency_percent": 87,
             "a_approc": 282,
             "b_approc": 0.792e-5
@@ -30,8 +28,7 @@
             "type": "Центробежный",
             "max_capacity_m3_per_hour": 1800,
             "min_capacity_m3_per_hour": 180,
-            "max_rpm": 2900,
-            "min_rpm": 1000,
+            "nominal_rotation_speed": 3000,
             "efficiency_percent": 86,
             "a_approc": 251,
             "b_approc": 0.812e-5
@@ -42,8 +39,7 @@
             "type": "Центробежный",
             "max_capacity_m3_per_hour": 1250,
             "min_capacity_m3_per_hour": 125,
-            "max_rpm": 2900,
-            "min_rpm": 950,
+            "nominal_rotation_speed": 3000,
             "efficiency_percent": 85,
             "a_approc": 245,
             "b_approc": 0.610e-4
@@ -54,8 +50,7 @@
             "type": "Центробежный",
             "max_capacity_m3_per_hour": 3600,
             "min_capacity_m3_per_hour": 360,
-            "max_rpm": 3000,
-            "min_rpm": 1000,
+            "nominal_rpm": 3000,
             "efficiency_percent": 88,
             "a_approc": 304,
             "b_approc": 0.579e-5
@@ -66,8 +61,7 @@
             "type": "Центробежный",
             "max_capacity_m3_per_hour": 2500,
             "min_capacity_m3_per_hour": 250,
-            "max_rpm": 2950,
-            "min_rpm": 900,
+            "nominal_rotation_speed": 3000,
             "efficiency_percent": 87,
             "a_approc": 285,
             "b_approc": 0.644e-5
@@ -78,8 +72,7 @@
             "type": "Центробежный",
             "max_capacity_m3_per_hour": 1800,
             "min_capacity_m3_per_hour": 180,
-            "max_rpm": 2900,
-            "min_rpm": 950,
+            "nominal_rotation_speed": 2900,
             "efficiency_percent": 86,
             "a_approc": 273,
             "b_approc": 0.125e-4
@@ -90,8 +83,7 @@
             "type": "Центробежный",
             "max_capacity_m3_per_hour": 5000,
             "min_capacity_m3_per_hour": 500,
-            "max_rpm": 3100,
-            "min_rpm": 1000,
+            "nominal_rotation_speed": 3100,
             "efficiency_percent": 89,
             "a_approc": 272,
             "b_approc": 0.260e-5
@@ -102,8 +94,7 @@
             "type": "Центробежный",
             "max_capacity_m3_per_hour": 3500,
             "min_capacity_m3_per_hour": 350,
-            "max_rpm": 3050,
-            "min_rpm": 950,
+            "nominal_rotation_speed": 3050,
             "efficiency_percent": 88,
             "a_approc": 286,
             "b_approc": 0.529e-5
@@ -114,8 +105,7 @@
             "type": "Центробежный",
             "max_capacity_m3_per_hour": 2500,
             "min_capacity_m3_per_hour": 250,
-            "max_rpm": 3000,
-            "min_rpm": 900,
+            "nominal_rotation_speed": 3000,
             "efficiency_percent": 87,
             "a_approc": 236,
             "b_approc": 0.484e-5
@@ -126,8 +116,7 @@
             "type": "Центробежный",
             "max_capacity_m3_per_hour": 7000,
             "min_capacity_m3_per_hour": 700,
-            "max_rpm": 3100,
-            "min_rpm": 1000,
+            "nominal_rotation_speed": 3100,
             "efficiency_percent": 90,
             "a_approc": 299,
             "b_approc": 0.194e-5
@@ -138,8 +127,7 @@
             "type": "Центробежный",
             "max_capacity_m3_per_hour": 7000,
             "min_capacity_m3_per_hour": 700,
-            "max_rpm": 3100,
-            "min_rpm": 950,
+            "nominal_rotation_speed": 3100,
             "efficiency_percent": 91,
             "a_approc": 305,
             "b_approc": 0.208e-5
@@ -150,8 +138,7 @@
             "type": "Центробежный",
             "max_capacity_m3_per_hour": 5000,
             "min_capacity_m3_per_hour": 500,
-            "max_rpm": 3050,
-            "min_rpm": 900,
+            "nominal_rotation_speed": 3050,
             "efficiency_percent": 89,
             "a_approc": 263,
             "b_approc": 0.197e-5

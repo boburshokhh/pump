@@ -1,8 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import App from '../App.vue';
 import HomeView from '../views/HomeView.vue'
 import NotFound from '../components/layouts/NotFound.vue'
-import BaseEditForm from '../components/base/BaseEditForm.vue';
+import UserGuide from '../components/features/UserGuide.vue';
 
 const routes = [
   {
@@ -15,7 +14,11 @@ const routes = [
     name: 'Home',
     component: HomeView
   },
-  
+  {
+    path: '/guide',
+    name: 'Guide',
+    component: UserGuide
+  }
 ];
 
 const router = createRouter({

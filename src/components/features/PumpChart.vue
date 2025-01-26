@@ -51,7 +51,7 @@ export default defineComponent({
       () => calculationsStore.calculateClicked,
       (newValue) => {
         if (newValue) {
-          console.log("PumpChart: Calculate button was clicked!");
+          // console.log("PumpChart: Calculate button was clicked!");
           // После обработки сбрасываем флаг
           calculationsStore.setCalculateClicked(false);
         }
@@ -62,7 +62,7 @@ export default defineComponent({
     watch(
       () => calculationsStore.pumpResults,
       (newResults) => {
-        console.log("Store results changed:", newResults);
+        // console.log("Store results changed:", newResults);
         if (chartInstance.value && newResults) {
           const newData = processData(newResults);
           

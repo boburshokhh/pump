@@ -12,7 +12,7 @@
       :escMessage="dialogProps.escMessage"
       ref="dialogClickCalck"
     />
-    <h3 v-if="!editMode">Параметры НПС</h3>
+    <!-- <h3 v-if="!editMode">Параметры НПС</h3> -->
     <StationParameters :data="data" :errors="errors" :editMode="editMode" />
     <n-collapse v-model:expanded="expandedKeys">
       <n-collapse-item
@@ -230,7 +230,7 @@ export default {
 
     async loadOptions() {
       let res = await this.optionsStore.loadOptions();
-      console.log("res", res);
+      // console.log("res", res);
     },
     addForm() {
       const newPump = {
@@ -369,7 +369,7 @@ export default {
         this.$refs.dialogClickCalck.showDialog();
         this.$emit("close");
       } catch (error) {
-        console.error("Ошибка при сохранении станции:", error);
+        // console.error("Ошибка при сохранении станции:", error);
         this.showNotification(
           this.getNotificationOptions(
             "Ошибка",
@@ -399,7 +399,7 @@ export default {
 
     validatePumps() {
       let isValid = true;
-      console.log("pump", this.pumps);
+      // console.log("pump", this.pumps);
       this.pumps.forEach((pump, index) => {
         if (!pump.name) {
           if (!this.errors.pumps) this.errors.pumps = [];

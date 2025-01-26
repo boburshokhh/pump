@@ -1,6 +1,5 @@
 import { useIndexStore } from "../../stores/index";
 import { useOptionsStore } from "../../stores/options";
-
 /**
  * Функция для форматированного вывода массива значений
  * @param {string} title - Название параметра
@@ -24,9 +23,9 @@ export function calculatePumpEfficiency() {
     const pumps_stations = storePumpsStations.getStations;
 
     // Инициализация массивов для хранения параметров
-    const consumptionStation = [];     // Расход на станциях [м³/ч]
+    const consumptionStation = [];    // Расход на станциях [м³/ч]
     const d_internal = [];            // Внутренний диаметр труб [м]
-    const dh_pump = [];                  // Напор насосов [м]
+    const dh_pump = [];               // Напор насосов [м]
     const lengthPipeline = [];        // Длина трубопровода [км]
     const diameterPipe = [];          // Наружный диаметр труб [м]
     const wallThicknessPipe = [];     // Толщина стенки труб [м]
@@ -40,6 +39,7 @@ export function calculatePumpEfficiency() {
     const dh_pns = 100;               // Подъём насоса [м]
     const h_inlet_first_pump = 10;    // Напор на входе первого насоса [м]
 
+    //
     // Массивы для промежуточных расчетов
     const lam = [];                   // Коэффициент гидравлического сопротивления
     const h_in = [];                  // Напор на входе станций [м]
@@ -70,15 +70,16 @@ export function calculatePumpEfficiency() {
     h_in[0] = h_inlet_first_pump + dh_pns
     for (let i = 0; i < selectedPumps.length; i++) {
         let stationFlow = 0;
-
         selectedPumps[i].forEach((pump, j) => {
+            const nominal_rotation_speed = pump.nominal_rotation_speed
+            const fact_rotation_speed = pumps_stations[i].pumps[j].fact_rpm
             const numOfPumps = pumps_stations[i].pumps[j].numOfPumps;
-            const pumpFlow = (pump.a_approc - pump.b_approc * Math.pow(consumptionStation[i], 2)) * numOfPumps;
+            const pumpFlow = (pump.a_approc*Math.pow(fact_rotation_speed/nominal_rotation_speed,2) - pump.b_approc * Math.pow(consumptionStation[i], 2)) * numOfPumps;
             stationFlow += pumpFlow;
         });
-
         dh_pump.push(stationFlow);
     }
+    // console.log("dh_pump:",dh_pump)
 
 
     // Расчёт внутренних диаметров труб
@@ -124,7 +125,17 @@ export function calculatePumpEfficiency() {
 
     const lastIndex = pumps_stations.length - 1;
     h_in[lastIndex + 1] = h_out[lastIndex] - head_loss[lastIndex];
-
+    let dataObject = {
+        head_loss,
+        h_in,
+        h_out,
+        lengthPipeline,
+        consumptionStation,
+        speed,
+        Re,
+        dh_pump
+    }
+    console.log("dataObject:",dataObject)
     return {
         head_loss,
         h_in,

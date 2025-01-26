@@ -2,228 +2,269 @@
   <div class="table-container">
     <div class="table">
       <dialogPump />
-      <BaseEditForm v-model:dialog="isDialogOpen" :pumpStationIndex="pumpStationIndex" :station="pumpStation" />
+      <BaseEditForm
+        v-model:dialog="isDialogOpen"
+        :pumpStationIndex="pumpStationIndex"
+        :station="pumpStation"
+      />
       <!-- <SelectComponents /> -->
       <!-- <v-card class="mx-auto"> -->
-        <v-divider></v-divider>
-        <v-card-text>
-          <div class="table-header">
-            <div class="table-title">
-              <h2>Список станций</h2>
-              <span class="station-count">Всего станций: {{ stations.length }}</span>
-            </div>
-            <div class="table-actions">
-              <div class="search-wrapper">
-                <v-text-field
-                  v-model="searchQuery"
-                  class="search-field"
-                  placeholder="Поиск по станциям и насосам..."
-                  clearable
-                  density="compact"
-                  @click:clear="clearSearch"
-                >
-                  <template v-slot:prepend-inner>
-                    <v-icon
-                      :color="searchQuery ? 'white' : 'grey-lighten-2'"
-                      class="search-icon"
-                    >
-                      mdi-magnify
-                    </v-icon>
-                  </template>
-                </v-text-field>
-                <div v-if="searchQuery && filteredStations.length > 0" class="search-results">
-                  Найдено: {{ filteredStations.length }} {{ getNounForm(filteredStations.length, ['станция', 'станции', 'станций']) }}
-                </div>
-              </div>
-              <v-menu>
-                <template v-slot:activator="{ props }">
-                  <v-btn
-                    color="success"
-                    v-bind="props"
-                    class="export-btn"
-                    elevation="2"
-                  >
-                    <v-icon icon="mdi-microsoft-excel" class="export-icon"></v-icon>
-                    <span class="export-text">Excel</span>
-                  </v-btn>
-                </template>
-                <v-list class="export-menu">
-                  <v-list-item
-                    @click="downloadExcel('all')"
-                    class="export-menu-item"
-                  >
-                    <v-list-item-title>
-                      <v-icon start icon="mdi-table-multiple" class="mr-2"></v-icon>
-                      Скачать все станции
-                    </v-list-item-title>
-                  </v-list-item>
-                  <v-divider></v-divider>
-                  <v-list-item
-                    v-for="(station, index) in stations"
-                    :key="index"
-                    @click="downloadExcel('single', index)"
-                    class="export-menu-item"
-                  >
-                    <v-list-item-title>
-                      <v-icon start icon="mdi-table" class="mr-2"></v-icon>
-                      {{ station.station }}
-                    </v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
-            </div>
+      <v-divider></v-divider>
+      <v-card-text>
+        <div class="table-header">
+          <div class="table-title">
+            <h2>Список станций</h2>
+            <span class="station-count"
+              >Всего станций: {{ stations.length }}</span
+            >
           </div>
-          <v-table
-            fixed-header
-            height="500px"
-            class="elevation-1 custom-table"
-            :loading="isLoading"
-          >
-            <thead>
-              <tr>
-                <th v-for="(header, index) in headers" 
-                    :key="index" 
-                    class="text-left table-header-cell"
-                    :class="{ 
-                      'actions-column': header.isAction,
-                      'station-column': header.isStation 
-                    }"
-                    :style="{ width: header.width }"
-                >
-                  <div class="header-content">
-                    {{ header.text }}
-                    <v-icon
-                      v-if="header.icon"
-                      :icon="header.icon"
-                      size="small"
-                      class="ml-1"
-                      color="grey-darken-1"
-                    ></v-icon>
-                    <v-tooltip v-if="header.tooltip" location="top">
-                      <template v-slot:activator="{ props }">
-                        <v-icon
-                          v-bind="props"
-                          size="small"
-                          class="ml-1"
-                          color="grey-darken-1"
-                        >
-                          mdi-information
-                        </v-icon>
-                      </template>
-                      <span>{{ header.tooltip }}</span>
-                    </v-tooltip>
-                  </div>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(item, index) in filteredStations" 
-                  :key="index"
-                  :class="{ 'highlighted-row': item.isHighlighted }"
-                  @click="selectRow(index)"
+          <div class="table-actions">
+            <div class="search-wrapper">
+              <v-text-field
+                v-model="searchQuery"
+                class="search-field"
+                placeholder="Поиск по станциям и насосам..."
+                clearable
+                density="compact"
+                @click:clear="clearSearch"
               >
-                <td class="station-column">
-                  <div class="station-name">{{ item.station }}</div>
-                </td>
-                <td>{{ item.flow }}</td>
-                <td>{{ item.length }}</td>
-                <td>{{ item.afp_consumption }}</td>
-                <td class="pumps-column">
-                  <div v-for="pump in item.pumps" 
-                       :key="pump.id" 
-                       class="pump-info"
+                <template v-slot:prepend-inner>
+                  <v-icon
+                    :color="searchQuery ? 'white' : 'grey-lighten-2'"
+                    class="search-icon"
                   >
-                    <span
-                      @click="showPumpMoreInfo(pump)"
-                      class="pump-link"
-                    >
-                      {{ pump.name }}
-                    </span>
-                  </div>
-                </td>
-                <td class="pumps-column">
-                  <div v-for="pump in item.pumps" 
-                       :key="pump.id" 
-                       class="pump-info"
+                    mdi-magnify
+                  </v-icon>
+                </template>
+              </v-text-field>
+              <div
+                v-if="searchQuery && filteredStations.length > 0"
+                class="search-results"
+              >
+                Найдено: {{ filteredStations.length }}
+                {{
+                  getNounForm(filteredStations.length, [
+                    "станция",
+                    "станции",
+                    "станций",
+                  ])
+                }}
+              </div>
+            </div>
+            <v-menu>
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  color="success"
+                  v-bind="props"
+                  class="export-btn"
+                  elevation="2"
+                >
+                  <v-icon
+                    icon="mdi-microsoft-excel"
+                    class="export-icon"
+                  ></v-icon>
+                  <span class="export-text">Excel</span>
+                </v-btn>
+              </template>
+              <v-list class="export-menu">
+                <v-list-item
+                  @click="downloadExcel('all')"
+                  class="export-menu-item"
+                >
+                  <v-list-item-title>
+                    <v-icon
+                      start
+                      icon="mdi-table-multiple"
+                      class="mr-2"
+                    ></v-icon>
+                    Скачать все станции
+                  </v-list-item-title>
+                </v-list-item>
+                <v-divider></v-divider>
+                <v-list-item
+                  v-for="(station, index) in stations"
+                  :key="index"
+                  @click="downloadExcel('single', index)"
+                  class="export-menu-item"
+                >
+                  <v-list-item-title>
+                    <v-icon start icon="mdi-table" class="mr-2"></v-icon>
+                    {{ station.station }}
+                  </v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </div>
+        </div>
+        <v-table
+          fixed-header
+          height="500px"
+          class="elevation-1 custom-table"
+          :loading="isLoading"
+        >
+          <thead class="table-header-fixed">
+            <tr>
+              <th
+                v-for="(header, index) in headers"
+                :key="index"
+                class="text-left table-header-cell"
+                :class="{
+                  'actions-column': header.isAction,
+                  'station-column': header.isStation,
+                }"
+                :style="{ width: header.width }"
+              >
+                <div class="header-content">
+                  {{ header.text }}
+                  <v-tooltip
+                    v-if="header.tooltip"
+                    location="top"
+                    :open-delay="100"
+                    content-class="modern-tooltip"
+                    :close-delay="100"
+                    activator="parent"
                   >
-                    {{ pump.numOfPumps }}
-                  </div>
-                </td>
-                <td class="pumps-column">
-                  <div v-for="pump in item.pumps" 
-                       :key="pump.id" 
-                       class="pump-info"
-                  >
-                    {{ pump.rpm }}
-                  </div>
-                </td>
-                <td>{{ item.inputPressure }}</td>
-                <td>{{ item.outputPressure }}</td>
-                <td>{{ item.power }}</td>
-                <td>
-                  <PipeAndLiquidParameters :parameters="item" />
-                </td>
-                <td class="actions-column">
-                  <div class="action-buttons">
-                    <v-btn
-                      size="small"
-                      color="primary"
-                      variant="text"
-                      class="action-btn"
-                      @click.stop="openDialog(index, item)"
-                    >
-                      <v-icon size="small">mdi-pencil</v-icon>
-                      <v-tooltip activator="parent" location="top">
-                        <span>Редактировать НПС</span>
-                      </v-tooltip>
-                    </v-btn>
-                    <v-btn
-                      size="small"
-                      color="error"
-                      variant="text"
-                      class="action-btn"
-                      @click.stop="deleteStation(index)"
-                    >
-                      <v-icon size="small">mdi-delete</v-icon>
-                      <v-tooltip activator="parent" location="top">
-                        <span>Удалить НПС</span>
-                      </v-tooltip>
-                    </v-btn>
-                  </div>
-                </td>
-              </tr>
-              <!-- Пустое состояние -->
-              <tr v-if="filteredStations.length === 0">
-                <td :colspan="headers.length" class="text-center empty-state">
-                  <v-icon size="large" color="grey-lighten-1">mdi-alert-circle-outline</v-icon>
-                  <p>{{ searchQuery ? 'Станции не найдены' : 'Нет доступных станций' }}</p>
-                </td>
-              </tr>
-            </tbody>
-          </v-table>
+                    <div class="modern-tooltip-content">
+                      {{ header.tooltip }}
+                    </div>
+                  </v-tooltip>
+                  <v-icon
+                    v-if="header.tooltip"
+                    icon="mdi-information"
+                    size="14"
+                    class="info-icon"
+                  />  
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(item, index) in paginatedStations"
+              :key="index"
+              :class="{ 'highlighted-row': item.isHighlighted }"
+              @click="selectRow(index)"
+            >
+              <td class="station-column">
+                <div class="station-name">{{ item.station }}</div>
+              </td>
+              <td>{{ item.flow }}</td>
+              <td>{{ item.length }}</td>
+              <td>{{ item.afp_consumption }}</td>
+              <td class="pumps-column">
+                <div
+                  v-for="pump in item.pumps"
+                  :key="pump.id"
+                  class="pump-info"
+                >
+                  <span @click="showPumpMoreInfo(pump)" class="pump-link">
+                    {{ pump.name }}
+                  </span>
+                </div>
+              </td>
+              <td class="pumps-column">
+                <div
+                  v-for="pump in item.pumps"
+                  :key="pump.id"
+                  class="pump-info"
+                >
+                  {{ pump.numOfPumps }}
+                </div>
+              </td>
+              <td class="pumps-column">
+                <div
+                  v-for="pump in item.pumps"
+                  :key="pump.id"
+                  class="pump-info"
+                >
+                  {{ pump.fact_rpm }}
+                </div>
+              </td>
+              <td>{{ item.inputPressure }}</td>
+              <td>{{ item.outputPressure }}</td>
+              <td>{{ item.power }}</td>
+              <td>
+                <PipeAndLiquidParameters :parameters="item" />
+              </td>
+              <td class="actions-column">
+                <div class="action-buttons">
+                  <n-tooltip placement="bottom">
+                    <template #trigger>
+                  <n-button @click.stop="openDialog(index, item)" quaternary circle type="success">
+                    <template #icon>
+                      <n-icon><PencilSharp/></n-icon>
+                    </template>
+                  </n-button>
+                    </template>
+                  Редактировать
+                  </n-tooltip>
+                  <n-popconfirm
+                  :positive-text="'Да'"
+                  :negative-text="'Нет'"
+                  @positive-click="handlePositiveClick(index)"
+                  @negative-click="handleNegativeClick(index)"
+                >
+                  <template #trigger>
+                    <n-tooltip placement="bottom">
+                      <template #trigger>
+                        <n-button quaternary circle type="error">
+                          <template #icon>
+                            <n-icon><TrashOutline /></n-icon>
+                          </template>
+                        </n-button>
+                      </template>
+                      Удалить
+                    </n-tooltip>
+                  </template>
+                  Хотите ли вы удалить эту станцию?
+                </n-popconfirm>
+                
+                </div>
+              </td>
+            </tr>
+            <!-- Пустое состояние -->
+            <tr v-if="paginatedStations.length === 0">
+              <td :colspan="headers.length" class="text-center empty-state">
+                <v-icon size="large" color="grey-lighten-1"
+                  >mdi-alert-circle-outline</v-icon
+                >
+                <p>
+                  {{
+                    searchQuery ? "Станции не найдены" : "Нет доступных станций"
+                  }}
+                </p>
+              </td>
+            </tr>
+          </tbody>
+        </v-table>
 
-          <!-- Пагинация -->
-          <div class="table-footer">
-            <div class="items-per-page">
-              <span>Строк на странице:</span>
+        <!-- Пагинация -->
+        <div class="d-flex justify-space-between align-center pa-4">
+          <v-tooltip location="top" text="Количество строк на странице">
+            <template v-slot:activator="{ props }">
               <v-select
+                v-bind="props"
                 v-model="itemsPerPage"
-                :items="[5, 10, 15, 20, 25, 50]"
+                :items="[5, 10, 15, 20]"
+                variant="outlined"
                 density="compact"
                 hide-details
-                class="items-select"
+                class="w-25"
               ></v-select>
-            </div>
-            <v-pagination
-              v-model="currentPage"
-              :length="pageCount"
-              :total-visible="7"
-            ></v-pagination>
-          </div>
-        </v-card-text>
+            </template>
+          </v-tooltip>
+          <v-pagination
+            v-model="page"
+            :length="pageCount"
+            :total-visible="7"
+            @update:model-value="handlePageChange"
+            class="pagination-control"
+          ></v-pagination>
+        </div>
+      </v-card-text>
       <!-- </v-card> -->
       <!-- <PipeAndLiquidParameters :parameters="selectedPipe" @close="showModalPipeAndLiquid = false"></PipeAndLiquidParameters> -->
-      <pumpInfo 
+      <pumpInfo
         ref="pumpModal"
         v-if="showModalPump"
         @close="showModalPump = false"
@@ -239,8 +280,11 @@ import { useIndexStore } from "../../stores/index";
 import { useNotification } from "naive-ui";
 import BaseEditForm from "./BaseEditForm.vue";
 import PipeAndLiquidParameters from "../table/PipeAndLiquidParameters.vue";
-import pumpInfo from "../modals/pumpInfo.vue"
-import * as XLSX from 'xlsx';
+import pumpInfo from "../modals/pumpInfo.vue";
+import * as XLSX from "xlsx";
+import {TrashOutline } from "@vicons/ionicons5";
+import {PencilSharp} from "@vicons/ionicons5";
+import { useMessage } from "naive-ui";
 
 export default {
   components: {
@@ -248,7 +292,31 @@ export default {
     useNotification,
     BaseEditForm,
     PipeAndLiquidParameters,
-    pumpInfo
+    pumpInfo,
+    TrashOutline,
+    PencilSharp,
+  },
+  setup() {
+    const stationStore = useIndexStore(); // Подключаем Pinia Store
+    const message = useMessage(); // Подключаем уведомления
+
+    // Метод для подтверждения удаления
+    const handlePositiveClick = (index) => {
+      stationStore.deleteStation(index); // Удаляем станцию
+      message.success("Станция успешно удалена!"); // Показываем сообщение об успехе
+    };
+
+    // Метод для отмены удаления
+    const handleNegativeClick = (index) => {
+      message.info("Удаление отменено."); // Показываем уведомление
+      console.log("Отмена удаления станции с индексом:", index);
+    };
+
+    return {
+      handlePositiveClick,
+      handleNegativeClick,
+      stationStore, // Делаем доступным для шаблона
+    };
   },
   computed: {
     stations() {
@@ -258,20 +326,25 @@ export default {
       let filtered = this.stations;
       if (this.searchQuery) {
         const query = this.searchQuery.toLowerCase();
-        filtered = filtered.filter(station => 
-          station.station.toLowerCase().includes(query) ||
-          station.pumps.some(pump => pump.name.toLowerCase().includes(query))
+        filtered = filtered.filter(
+          (station) =>
+            station.station.toLowerCase().includes(query) ||
+            station.pumps.some((pump) =>
+              pump.name.toLowerCase().includes(query)
+            )
         );
       }
-      
-      // Пагинация
-      const start = (this.currentPage - 1) * this.itemsPerPage;
+
+      return filtered;
+    },
+    paginatedStations() {
+      const start = (this.page - 1) * this.itemsPerPage;
       const end = start + this.itemsPerPage;
-      return filtered.slice(start, end);
+      return this.filteredStations.slice(start, end);
     },
     pageCount() {
       return Math.ceil(this.filteredStations.length / this.itemsPerPage);
-    }
+    },
   },
   data() {
     return {
@@ -286,23 +359,68 @@ export default {
       showModalPipeAndLiquid: false,
       selectedPipe: {},
       selectedPumpId: null,
-      showModalPump:false,
+      showModalPump: false,
       headers: [
-        { text: 'Станция', width: '8%', isStation: true, icon: 'mdi-office-building' },
-        { text: 'Расход', width: '7%', tooltip: 'Расход в м³/ч', icon: 'mdi-pump' },
-        { text: 'Длина участка', width: '8%', tooltip: 'Длина участка в км', icon: 'mdi-ruler' },
-        { text: 'Расход АФП', width: '7%', tooltip: 'Расход АФП в км', icon: 'mdi-chart-line' },
-        { text: 'Насосы', width: '15%', icon: 'mdi-pump-off' },
-        { text: 'Кол-во насосов', width: '7%', icon: 'mdi-counter' },
-        { text: 'Обороты', width: '7%', tooltip: 'Число оборотов', icon: 'mdi-rotate-right' },
-        { text: 'Давление вход', width: '8%', tooltip: 'Давление на входе МНС, кПа', icon: 'mdi-gauge-low' },
-        { text: 'Давление выход', width: '8%', tooltip: 'Давление на выходе НПС, кПа', icon: 'mdi-gauge' },
-        { text: 'Мощность', width: '7%', tooltip: 'Затрачиваемая мощность, кВт', icon: 'mdi-lightning-bolt' },
-        { text: 'Параметры', width: '8%', tooltip: 'Параметры жидкости и трубы', icon: 'mdi-tune-vertical' },
-        { text: 'Действия', width: '10%', isAction: true, icon: 'mdi-cog' }
+        {
+          text: "Станция",
+          width: "8%",
+          isStation: true,
+          icon: "mdi-office-building",
+        },
+        {
+          text: "Расход",
+          width: "7%",
+          tooltip: "Расход в м³/ч",
+          icon: "mdi-pump",
+        },
+        {
+          text: "Длина участка",
+          width: "8%",
+          tooltip: "Длина участка в км",
+          icon: "mdi-ruler",
+        },
+        {
+          text: "Расход АФП",
+          width: "7%",
+          tooltip: "Расход АФП в км",
+          icon: "mdi-chart-line",
+        },
+        { text: "Насосы", width: "15%", icon: "mdi-pump-off" },
+        { text: "Кол-во насосов", width: "7%", icon: "mdi-counter" },
+        {
+          text: "Обороты",
+          width: "7%",
+          tooltip: "Число оборотов",
+          icon: "mdi-rotate-right",
+        },
+        {
+          text: "Давление вход",
+          width: "8%",
+          tooltip: "Давление на входе МНС, кПа",
+          icon: "mdi-gauge-low",
+        },
+        {
+          text: "Давление выход",
+          width: "8%",
+          tooltip: "Давление на выходе НПС, кПа",
+          icon: "mdi-gauge",
+        },
+        {
+          text: "Мощность",
+          width: "7%",
+          tooltip: "Затрачиваемая мощность, кВт",
+          icon: "mdi-lightning-bolt",
+        },
+        {
+          text: "Параметры",
+          width: "8%",
+          tooltip: "Параметры жидкости и трубы",
+          icon: "mdi-tune-vertical",
+        },
+        { text: "Действия", width: "10%", isAction: true, icon: "mdi-cog" },
       ],
-      searchQuery: '',
-      currentPage: 1,
+      searchQuery: "",
+      page: 1,
       itemsPerPage: 10,
       isLoading: false,
       selectedRow: null,
@@ -312,20 +430,19 @@ export default {
   },
   watch: {
     searchQuery(newVal) {
-      // Добавляем небольшую задержку перед поиском
       clearTimeout(this.searchTimeout);
       this.isSearching = true;
-      
+
       this.searchTimeout = setTimeout(() => {
         this.performSearch(newVal);
         this.isSearching = false;
       }, 300);
-    }
+    },
   },
   methods: {
     openDialog(index, station) {
       event?.stopPropagation();
-      
+
       this.isDialogOpen = true;
       this.pumpStationIndex = index;
       this.pumpStation = { ...station };
@@ -337,8 +454,7 @@ export default {
     async fetchData() {
       this.isLoading = true;
       try {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        // ... your data fetching logic
+        await new Promise((resolve) => setTimeout(resolve, 500));
       } finally {
         this.isLoading = false;
       }
@@ -347,24 +463,24 @@ export default {
       return value > 0 ? null : "error";
     },
     showPumpMoreInfo(pump) {
-        if (!pump || !pump.id) {
-            console.error("Неверные данные насоса:", pump);
-            return;
-        }
-        this.showModalPump= true;
-        this.selectedPumpId = pump.id;
-        setTimeout(()=>{
-            this.$refs.pumpModal.open();
-        },100)
+      if (!pump || !pump.id) {
+        console.error("Неверные данные насоса:", pump);
+        return;
+      }
+      this.showModalPump = true;
+      this.selectedPumpId = pump.id;
+      setTimeout(() => {
+        this.$refs.pumpModal.open();
+      }, 100);
     },
     downloadExcel(type, stationIndex = null) {
       try {
         let excelData;
         let filename;
 
-        if (type === 'all') {
+        if (type === "all") {
           excelData = this.stations.map(this.prepareStationData);
-          filename = 'all_stations_data.xlsx';
+          filename = "all_stations_data.xlsx";
         } else {
           excelData = [this.prepareStationData(this.stations[stationIndex])];
           filename = `station_${this.stations[stationIndex].station}.xlsx`;
@@ -373,73 +489,73 @@ export default {
         // Создание рабочей книги Excel
         const worksheet = XLSX.utils.json_to_sheet(excelData);
         const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Станции');
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Станции");
 
         // Автоматическая настройка ширины столбцов
         const maxWidth = 50;
-        const wscols = Object.keys(excelData[0]).map(key => ({
-          wch: Math.min(key.length + 2, maxWidth)
+        const wscols = Object.keys(excelData[0]).map((key) => ({
+          wch: Math.min(key.length + 2, maxWidth),
         }));
-        worksheet['!cols'] = wscols;
+        worksheet["!cols"] = wscols;
 
         // Стилизация заголовков
-        const range = XLSX.utils.decode_range(worksheet['!ref']);
+        const range = XLSX.utils.decode_range(worksheet["!ref"]);
         for (let C = range.s.c; C <= range.e.c; ++C) {
           const address = XLSX.utils.encode_col(C) + "1";
           if (!worksheet[address]) continue;
           worksheet[address].s = {
             font: { bold: true },
-            fill: { fgColor: { rgb: "EFEFEF" } }
+            fill: { fgColor: { rgb: "EFEFEF" } },
           };
         }
 
         // Скачивание файла
         XLSX.writeFile(workbook, filename);
       } catch (error) {
-        console.error('Ошибка при создании Excel файла:', error);
+        console.error("Ошибка при создании Excel файла:", error);
       }
     },
     prepareStationData(item) {
-          const pumpsInfo = item.pumps.map(pump => 
-            `${pump.name} (${pump.numOfPumps}шт, ${pump.rpm}об/мин)`
-          ).join(', ');
-          
-          return {
-            'Станция': item.station,
-            'Расход, м³/ч': item.flow,
-            'Длина участки, км': item.length,
-            'Расход АФП, км': item.afp_consumption,
-            'Насосы': pumpsInfo,
-            'Давление на входе МНС, кПа': item.inputPressure,
-            'Давление на выходе НПС, кПа': item.outputPressure,
-            'Затрачиваемая мощность, кВт': item.power
-          };
-    },
-    deleteStation(index) {
-      // Добавьте подтверждение перед удалением
-      if (confirm('Вы уверены, что хотите удалить эту станцию?')) {
-        this.stationStore.deleteStation(index);
-      }
+      const pumpsInfo = item.pumps
+        .map((pump) => `${pump.name} (${pump.numOfPumps}шт, ${pump.rpm}об/мин)`)
+        .join(", ");
+
+      return {
+        Станция: item.station,
+        "Расход, м³/ч": item.flow,
+        "Длина участки, км": item.length,
+        "Расход АФП, км": item.afp_consumption,
+        Насосы: pumpsInfo,
+        "Давление на входе МНС, кПа": item.inputPressure,
+        "Давление на выходе НПС, кПа": item.outputPressure,
+        "Затрачиваемая мощность, кВт": item.power,
+      };
     },
     selectRow(index) {
-      if (event?.target?.closest('.action-buttons')) {
+      if (event?.target?.closest(".action-buttons")) {
         return;
       }
       this.selectedRow = index;
     },
     clearSearch() {
-      this.searchQuery = '';
-      this.currentPage = 1;
+      this.searchQuery = "";
+      this.page = 1;
     },
     performSearch(query) {
       // Здесь можно добавить дополнительную логику поиска
-      this.currentPage = 1; // Сбрасываем на первую страницу при поиске
+      this.page = 1; // Сбрасываем на первую страницу при поиске
     },
     getNounForm(number, forms) {
       const cases = [2, 0, 1, 1, 1, 2];
-      return forms[(number % 100 > 4 && number % 100 < 20) ? 2 : 
-        cases[(number % 10 < 5) ? number % 10 : 5]];
-    }
+      return forms[
+        number % 100 > 4 && number % 100 < 20
+          ? 2
+          : cases[number % 10 < 5 ? number % 10 : 5]
+      ];
+    },
+    handlePageChange(newPage) {
+      this.page = newPage;
+    },
   },
 };
 </script>
@@ -447,11 +563,13 @@ export default {
 <style scoped>
 /* Добавляем новые стили в начало */
 .table-container {
-  padding-top: 64px; /* Высота header */
+  padding-top: 64px;
+  /* Высота header */
   min-height: calc(100vh - 64px);
   background: white;
   position: relative;
-  z-index: 5; /* Должен быть выше, чем z-index волн в header */
+  z-index: 5;
+  /* Должен быть выше, чем z-index волн в header */
 }
 
 .table {
@@ -658,7 +776,7 @@ export default {
   position: sticky !important;
   right: 0;
   background-color: white !important;
-  z-index: 20 !important;
+  z-index: 0 !important;
   box-shadow: -2px 0 4px -2px rgba(0, 0, 0, 0.1);
 }
 
@@ -666,7 +784,7 @@ export default {
   display: flex;
   gap: 8px;
   justify-content: center;
-  z-index: 10;
+  z-index: 0;
 }
 
 .action-btn {
@@ -757,8 +875,48 @@ export default {
   position: sticky !important;
   left: 0;
   background-color: white !important;
-  z-index: 9999 !important;
+  z-index: 1 !important;
   box-shadow: 2px 0 4px -2px rgba(0, 0, 0, 0.1);
+}
+
+.header-content:hover .info-icon {
+  opacity: 1;
+  color: #2196F3;
+}
+.info-icon {
+  opacity: 0.5;
+  color: #666;
+  transition: all 0.2s ease;
+  margin-top: 1px;
+}
+
+:deep(.modern-tooltip) {
+  background: #ffffff;
+  border-radius: 6px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #424242;
+  max-width: 280px;
+  border: 1px solid #edf2f7;
+  backdrop-filter: blur(8px);
+  transform-origin: top center;
+  animation: tooltipFade 0.2s ease-out;
+}
+
+@keyframes tooltipFade {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.modern-tooltip-content {
+  line-height: 1.5;
+  font-weight: 400;
 }
 
 .station-name {
@@ -785,11 +943,6 @@ export default {
 .v-table thead tr th.station-column,
 .v-table tbody tr td.station-column {
   background-color: #fff !important;
-  z-index: 21 !important;
-}
-
-.v-table thead tr th.actions-column {
-  z-index: 21 !important;
 }
 
 /* Стили для четных строк закрепленных колонок */
@@ -835,7 +988,7 @@ export default {
 
 .table-footer {
   display: flex;
-  justify-content: space-between;
+  justify-content: end;
   align-items: center;
   margin-top: 1rem;
   padding: 0.5rem 0;
@@ -956,6 +1109,47 @@ export default {
 .v-field--focused {
   border-color: var(--v-primary-base) !important;
 }
+
+.table-header-fixed {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: white;
+}
+
+.table-header-cell {
+  background-color: white;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 16px;
+  gap: 16px;
+}
+
+.pagination-control {
+  margin: 0;
+}
+
+/* Ensure fixed header stays above content during scroll */
+.v-table > .v-table__wrapper > table > thead > tr > th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: white;
+}
+
+/* Fix for overlapping content */
+.v-table > .v-table__wrapper > table > tbody > tr > td {
+  position: relative;
+}
+
 .v-table tbody tr:hover td.station-column[data-v-b59edd4a],
 .v-table tbody tr:hover td.actions-column[data-v-b59edd4a] {
   background-color: rgb(255, 255, 255) !important;

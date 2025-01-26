@@ -42,6 +42,10 @@
                     <v-icon left>mdi-phone</v-icon>
                     Контакты
                 </v-btn>
+                <v-btn text to="/guide" class="mx-1 nav-btn" color="primary">
+                    <v-icon left>mdi-help-circle</v-icon>
+                    Руководство
+                </v-btn>
             </div>
         </v-app-bar>
 
@@ -90,7 +94,8 @@ import {
     InformationCircle, 
     Construct,
     Call,
-    Close
+    Close,
+    HelpCircle
 } from '@vicons/ionicons5'
 
 export default {
@@ -100,7 +105,8 @@ export default {
         InformationCircle,
         Construct,
         Call,
-        Close
+        Close,
+        HelpCircle
     },
     data() {
         return {
@@ -110,6 +116,7 @@ export default {
                 { title: "О нас", icon: "information", path: "/about" },
                 { title: "Услуги", icon: "tools", path: "/services" },
                 { title: "Контакты", icon: "phone", path: "/contact" },
+                { title: "Руководство", icon: "help-circle", path: "/guide" },
             ],
         };
     },
@@ -119,7 +126,8 @@ export default {
                 'home': Home,
                 'information': InformationCircle,
                 'tools': Construct,
-                'phone': Call
+                'phone': Call,
+                'help-circle': HelpCircle
             }
             return icons[name]
         },

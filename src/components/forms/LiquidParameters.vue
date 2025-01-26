@@ -1,6 +1,6 @@
 <template>
   <v-row>
-    <v-col>
+    <v-col cols="12" md="6">
       <v-number-input
         v-model="data.density"
         :error-messages="errors.density ? [errors.density] : []"
