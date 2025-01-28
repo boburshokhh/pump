@@ -125,6 +125,42 @@ export function calculatePumpEfficiency() {
 
     const lastIndex = pumps_stations.length - 1;
     h_in[lastIndex + 1] = h_out[lastIndex] - head_loss[lastIndex];
+
+    const N_potreb = []
+    // Интеграция расчета эффективности насосов
+    const pumpPerformanceResults = pumps_stations.map((station, index) => {
+        // Массив для хранения результатов насосов станции
+        const stationPumpsResults = station.pumps.map((pump, pumpIndex) => {
+            const selectedPump = getPumpsList.find(p => p.id === pump.id);
+            const nominal_rpm = selectedPump.nominal_rotation_speed;
+            const fact_rpm = pump.fact_rpm;
+            const numOfPumps = pump.numOfPumps;
+            const a = selectedPump.a_approc;
+            const b = selectedPump.b_approc;
+            const efficiency = selectedPump.efficiency_percent;
+    
+            const dh_single = a * Math.pow(fact_rpm / nominal_rpm, 2) - b * Math.pow(consumptionStation[index], 2);
+            const N = densityLiquid[index] * g * (consumptionStation[index] / 3600) * dh_single;
+            const N_potreb = N / (efficiency / 100);
+    
+            return {
+                pumpId: pump.id,
+                name: pump.name,
+                head: dh_single,
+                power: N_potreb,
+                totalPower: N_potreb * numOfPumps,
+            };
+        });
+    
+        const totalStationPower = stationPumpsResults.reduce((sum, pumpResult) => sum + pumpResult.totalPower, 0);
+    
+        return {
+            pumps: stationPumpsResults,
+            totalPower: totalStationPower,
+        };
+    });
+    
+
     let dataObject = {
         head_loss,
         h_in,
@@ -133,18 +169,8 @@ export function calculatePumpEfficiency() {
         consumptionStation,
         speed,
         Re,
-        dh_pump
-    }
-    console.log("dataObject:",dataObject)
-    return {
-        head_loss,
-        h_in,
-        h_out,
-        lengthPipeline,
-        consumptionStation,
-        speed,
-        Re,
-        dh_pump
-    }
+        dh_pump,
+        pumpPerformanceResults
+    };
+    return dataObject;
 }
-

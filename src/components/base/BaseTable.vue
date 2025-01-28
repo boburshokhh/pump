@@ -133,7 +133,7 @@
                     icon="mdi-information"
                     size="14"
                     class="info-icon"
-                  />  
+                  />
                 </div>
               </th>
             </tr>
@@ -182,7 +182,6 @@
               </td>
               <td>{{ item.inputPressure }}</td>
               <td>{{ item.outputPressure }}</td>
-              <td>{{ item.power }}</td>
               <td>
                 <PipeAndLiquidParameters :parameters="item" />
               </td>
@@ -190,35 +189,39 @@
                 <div class="action-buttons">
                   <n-tooltip placement="bottom">
                     <template #trigger>
-                  <n-button @click.stop="openDialog(index, item)" quaternary circle type="success">
-                    <template #icon>
-                      <n-icon><PencilSharp/></n-icon>
+                      <n-button
+                        @click.stop="openDialog(index, item)"
+                        quaternary
+                        circle
+                        type="success"
+                      >
+                        <template #icon>
+                          <n-icon><PencilSharp /></n-icon>
+                        </template>
+                      </n-button>
                     </template>
-                  </n-button>
-                    </template>
-                  Редактировать
+                    Редактировать
                   </n-tooltip>
                   <n-popconfirm
-                  :positive-text="'Да'"
-                  :negative-text="'Нет'"
-                  @positive-click="handlePositiveClick(index)"
-                  @negative-click="handleNegativeClick(index)"
-                >
-                  <template #trigger>
-                    <n-tooltip placement="bottom">
-                      <template #trigger>
-                        <n-button quaternary circle type="error">
-                          <template #icon>
-                            <n-icon><TrashOutline /></n-icon>
-                          </template>
-                        </n-button>
-                      </template>
-                      Удалить
-                    </n-tooltip>
-                  </template>
-                  Хотите ли вы удалить эту станцию?
-                </n-popconfirm>
-                
+                    :positive-text="'Да'"
+                    :negative-text="'Нет'"
+                    @positive-click="handlePositiveClick(index)"
+                    @negative-click="handleNegativeClick(index)"
+                  >
+                    <template #trigger>
+                      <n-tooltip placement="bottom">
+                        <template #trigger>
+                          <n-button quaternary circle type="error">
+                            <template #icon>
+                              <n-icon><TrashOutline /></n-icon>
+                            </template>
+                          </n-button>
+                        </template>
+                        Удалить
+                      </n-tooltip>
+                    </template>
+                    Хотите ли вы удалить эту станцию?
+                  </n-popconfirm>
                 </div>
               </td>
             </tr>
@@ -237,7 +240,6 @@
             </tr>
           </tbody>
         </v-table>
-
         <!-- Пагинация -->
         <div class="d-flex justify-space-between align-center pa-4">
           <v-tooltip location="top" text="Количество строк на странице">
@@ -282,9 +284,10 @@ import BaseEditForm from "./BaseEditForm.vue";
 import PipeAndLiquidParameters from "../table/PipeAndLiquidParameters.vue";
 import pumpInfo from "../modals/pumpInfo.vue";
 import * as XLSX from "xlsx";
-import {TrashOutline } from "@vicons/ionicons5";
-import {PencilSharp} from "@vicons/ionicons5";
+import { TrashOutline } from "@vicons/ionicons5";
+import { PencilSharp } from "@vicons/ionicons5";
 import { useMessage } from "naive-ui";
+// import { useCalculationsStore } from "../../stores/calculations";
 
 export default {
   components: {
@@ -299,7 +302,11 @@ export default {
   setup() {
     const stationStore = useIndexStore(); // Подключаем Pinia Store
     const message = useMessage(); // Подключаем уведомления
+    // const calculationsStore = useCalculationsStore();
 
+    // calculationsStore.updateCalculations();
+    // const pumpStationsCalculations = calculationsStore.getPumpResults.pumpPerformanceResults;
+    // console.log(pumpStationsCalculations);
     // Метод для подтверждения удаления
     const handlePositiveClick = (index) => {
       stationStore.deleteStation(index); // Удаляем станцию
@@ -315,12 +322,19 @@ export default {
     return {
       handlePositiveClick,
       handleNegativeClick,
-      stationStore, // Делаем доступным для шаблона
+      stationStore,
     };
   },
   computed: {
     stations() {
       return this.stationStore.getStations;
+    },
+    getPumpResults() {
+      console.log(
+        "this.calculationsStore:",
+        this.calculationsStore.pumpResults
+      );
+      return this.calculationsStore.getPumpResults;
     },
     filteredStations() {
       let filtered = this.stations;
@@ -404,12 +418,6 @@ export default {
           width: "8%",
           tooltip: "Давление на выходе НПС, кПа",
           icon: "mdi-gauge",
-        },
-        {
-          text: "Мощность",
-          width: "7%",
-          tooltip: "Затрачиваемая мощность, кВт",
-          icon: "mdi-lightning-bolt",
         },
         {
           text: "Параметры",
@@ -881,7 +889,7 @@ export default {
 
 .header-content:hover .info-icon {
   opacity: 1;
-  color: #2196F3;
+  color: #2196f3;
 }
 .info-icon {
   opacity: 0.5;

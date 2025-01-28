@@ -15,7 +15,7 @@
           :min="0"
           :reverse="false"
           control-variant="split"
-          label="Расход"
+          label="Расход, м³/ч"
           :error-messages="errors.flow"
           :hideInput="false"
           inset
@@ -39,7 +39,7 @@
           :min="0"
           :reverse="false"
           control-variant="split"
-          label="Расход АФП, км"
+          label="Расход АФП, ppm"
           :hideInput="false"
           inset
           :error-messages="errors.afp_consumption"

@@ -11,7 +11,8 @@ export const useCalculationsStore = defineStore('calculations', {
             consumptionStation: [],
             speed: [],
             Re: [],
-            dh_pump: []
+            dh_pump: [],
+            pumpPerformanceResults: [] // Добавлено для результатов по насосам
         },
         isCalculating: false,
         lastUpdateTime: null,
@@ -37,7 +38,8 @@ export const useCalculationsStore = defineStore('calculations', {
                     consumptionStation: results.consumptionStation,
                     speed: results.speed,
                     Re: results.Re,
-                    dh_pump: results.dh_pump
+                    dh_pump: results.dh_pump,
+                    pumpPerformanceResults: results.pumpPerformanceResults // Сохранение данных по насосам
                 };
                 this.lastUpdateTime = new Date().toISOString();
             } catch (error) {
@@ -50,4 +52,4 @@ export const useCalculationsStore = defineStore('calculations', {
             this.calculateClicked = value;
         },
     },
-}); 
+});

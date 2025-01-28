@@ -23,7 +23,7 @@ export default defineComponent({
     const drawerWidth = ref("700px");
     const isMobile = ref(false);
     const calculationsStore = useCalculationsStore();
-    console.log("calculationsStore:",calculationsStore);  
+    // console.log("calculationsStore:",calculationsStore);  
     const showResults = ref(false);
 
     const updateDrawerWidth = () => {
@@ -68,8 +68,6 @@ export default defineComponent({
 
     const handleCalculate = () => {
       const isValid = calculationsStore.pumpResults.consumptionStation.every(value => value >= 0);
-
-      console.log("isValid:",isValid,"pumpResults:",calculationsStore.pumpResults);
       calculationsStore.setCalculateClicked(true);
       calculationsStore.updateCalculations();
       showResults.value = true;

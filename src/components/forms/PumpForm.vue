@@ -34,19 +34,27 @@
       <v-col cols="12" md="6">
         <v-number-input
           :min="0"
+          autocomplete="off"
           v-model="pump.numOfPumps"
           :error-messages="errors[index]?.numOfPumps"
           label="Кол-во насосов"
         ></v-number-input>
       </v-col>
       <v-col cols="12" md="6">
-        <v-number-input
-          :min="0"
-          v-model="pump.rpm"
-          :error-messages="errors[index]?.rpm"
-          label="Обороты"
-        ></v-number-input>
+        <div class="d-flex align-center">
+          <v-number-input
+            :min="0"
+            autocomplete="off"
+            :max="5000"
+            v-model="pump.fact_rpm"
+            :error-messages="errors[index]?.fact_rpm"
+            label="Ном. частота вращения, об./мин"
+          ></v-number-input>
+          <!-- <v-icon color="blue" class="ml-2" small>mdi-information</v-icon>
+          <span class="ml-2 text-caption">Допустимый диапазон: 2400–3150</span> -->
+        </div>
       </v-col>
+      
     </v-row>
   </div>
 </template>

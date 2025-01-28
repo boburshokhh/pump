@@ -162,7 +162,7 @@ export default {
         {
           name: "",
           numOfPumps: 0,
-          rpm: 0,
+          fact_rpm: 0,
         },
       ],
       data: {
@@ -188,7 +188,7 @@ export default {
         roughness: "",
         pressure: "",
         afp_consumption: "",
-        pumps: [{ name: "", numOfPumps: "", rpm: "" }],
+        pumps: [{ name: "", numOfPumps: "", fact_rpm: "" }],
       },
       rules: {
         required: (value) => !!value || "Поле обязательно для заполнения.",
@@ -236,7 +236,7 @@ export default {
       const newPump = {
         name: "",
         numOfPumps: 0,
-        rpm: 0,
+        fact_rpm: 0,
       };
       this.pumps.push(newPump);
     },
@@ -399,30 +399,41 @@ export default {
 
     validatePumps() {
       let isValid = true;
-      // console.log("pump", this.pumps);
+
       this.pumps.forEach((pump, index) => {
+        if (!this.errors.pumps) this.errors.pumps = [];
+        if (!this.errors.pumps[index]) this.errors.pumps[index] = {};
+
+        // Validate name
         if (!pump.name) {
-          if (!this.errors.pumps) this.errors.pumps = [];
-          this.errors.pumps[index] = this.errors.pumps[index] || {};
           this.errors.pumps[index].name = "Выберите насос.";
           isValid = false;
         } else {
-          if (this.errors.pumps && this.errors.pumps[index]) {
-            this.errors.pumps[index].name = "";
-          }
+          this.errors.pumps[index].name = "";
         }
 
+        // Validate numOfPumps
         if (!pump.numOfPumps || pump.numOfPumps <= 0) {
-          if (!this.errors.pumps) this.errors.pumps = [];
-          this.errors.pumps[index] = this.errors.pumps[index] || {};
           this.errors.pumps[index].numOfPumps = "Укажите количество насосов.";
           isValid = false;
         } else {
-          if (this.errors.pumps && this.errors.pumps[index]) {
-            this.errors.pumps[index].numOfPumps = "";
-          }
+          this.errors.pumps[index].numOfPumps = "";
+        }
+
+        // Validate fact_rpm
+        if (!pump.fact_rpm || pump.fact_rpm <= 0) {
+          this.errors.pumps[index].fact_rpm =
+            "Укажите корректное значение фактической частоты вращения ротора.";
+          isValid = false;
+        } else if (pump.fact_rpm < 2400 || pump.fact_rpm > 3150) {
+          this.errors.pumps[index].fact_rpm =
+            "Обороты должны быть от 2400 до 3150.";
+          isValid = false;
+        } else {
+          this.errors.pumps[index].fact_rpm = "";
         }
       });
+
       return isValid;
     },
   },
