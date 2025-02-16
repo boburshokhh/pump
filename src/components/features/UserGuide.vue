@@ -24,8 +24,10 @@
           <v-card-text class="guide-content">
             <v-fade-transition>
               <div class="guide-step">
-                <div class="guide-image-container">
+                <div class="guide-image-container d-flex justify-center align-center">
                   <v-img
+                   aspect-ratio="16/9"
+                   width="300"
                     :src="step.image"
                     :alt="step.title"
                     class="guide-image"
@@ -93,17 +95,14 @@ const steps = ref([
   {
     title: 'Добро пожаловать',
     description: 'Добро пожаловать в руководство по использованию нашего приложения. Мы покажем вам все основные функции и возможности.',
-    image: 'https://cdn.vuetifyjs.com/docs/images/featured/feature-1.png', // Путь к изображению
+    image: 'http://postimg.su/image/HDILBvNA/logo_gubkin_univer.png', // Путь к изображению
     indicators: [] // Пока нет индикаторов для первого шага
   },
   {
     title: 'Основной интерфейс',
     description: 'Познакомьтесь с основным интерфейсом приложения. Здесь вы можете найти все необходимые инструменты.',
-    image: 'https://cdn.vuetifyjs.com/docs/images/featured/feature-1.png',
-    indicators: [
-      { x: 20, y: 30, text: 'Главное меню' },
-      { x: 50, y: 60, text: 'Панель управления' }
-    ]
+    image: 'http://postimg.su/image/7L0GsZkO/1_rasschitat_tagi_tabl.jpg',
+    indicators: []
   }
   // Добавьте больше шагов по необходимости
 ])

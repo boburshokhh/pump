@@ -211,7 +211,9 @@
                 </v-row>
               </v-card-text>
             </v-tabs-window-item>
-            <v-tabs-window-item value="option-2">ddd</v-tabs-window-item>  
+            <v-tabs-window-item value="option-2">
+              <EconomTable />
+            </v-tabs-window-item>  
           </v-tabs-window>
         </v-card>
       </v-col>
@@ -225,9 +227,13 @@ import { useIndexStore } from "../../stores/index";
 import { useOptionsStore } from "../../stores/options";
 import { useCalculationsStore } from "../../stores/calculations";
 import { utils as XLSXUtils, writeFile } from "xlsx";
+import EconomTable from "./EconomTable.vue"
 
 export default {
   name: "BaseCanculationInfoGet",
+  components:{
+    EconomTable
+  },
   setup() {
     const indexStore = useIndexStore();
     const optionsStore = useOptionsStore();

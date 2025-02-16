@@ -6,6 +6,7 @@ export const useIndexStore = defineStore("stationStore", {
       {
         station: "Станция 1",
         flow: 2500,
+        connectionType: 'serial',
         pumps: [
           { id: 1, name: "HM 1250-260", numOfPumps: 2, fact_rpm: 2900 },
           { id: 2, name: "HM 3600-230", numOfPumps: 2, fact_rpm: 2850 }, // Используем фактическую скорость вращения
@@ -30,6 +31,7 @@ export const useIndexStore = defineStore("stationStore", {
       {
         station: "Станция 2",
         flow: 3500,
+        connectionType: 'serial',
         pumps: [
           { id: 2, name: "HM 3600-230", numOfPumps: 1, fact_rpm: 2850 },
           { id: 6, name: "HM 3600-230 (подача 2500 м³/ч)", numOfPumps: 1, fact_rpm: 2850 },
@@ -53,9 +55,10 @@ export const useIndexStore = defineStore("stationStore", {
       },
       {
         station: "Станция 3",
-        flow: 3500,
+        flow: 3000,
+        connectionType: 'serial',
         pumps: [
-          { id: 3, name: "HM 5000-210", numOfPumps: 2, fact_rpm: 3000 },
+          { id: 3, name: "HM 5000-210", numOfPumps: 2, fact_rpm: 2980 },
         ],
         inputPressure: "1200", // Подставьте значение из h_in[2]
         outputPressure: "1300", // Подставьте значение из h_out[2]
@@ -76,7 +79,8 @@ export const useIndexStore = defineStore("stationStore", {
       },
       {
         station: "Станция 4",
-        flow: 3100,
+        flow: 2880,
+        connectionType: 'serial',
         pumps: [
           { id: 3, name: "HM 2500-230 (подача 1800 м³/ч)", numOfPumps: 2, fact_rpm: 2800 },
         ],
@@ -99,9 +103,10 @@ export const useIndexStore = defineStore("stationStore", {
       },
       {
         station: "Станция 5",
-        flow: 3100,
+        flow: 3000,
+        connectionType: 'serial',
         pumps: [
-          { id: 3, name: "HM 2500-230 (подача 1800 м³/ч)", numOfPumps: 2, fact_rpm: 2800 },
+          { id: 3, name: "HM 2500-230 (подача 1800 м³/ч)", numOfPumps: 2, fact_rpm: 2900 },
         ],
         inputPressure: "1300", // Подставьте значение из h_in[3]
         outputPressure: "1400", // Подставьте значение из h_out[3]

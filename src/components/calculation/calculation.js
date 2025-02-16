@@ -37,7 +37,7 @@ export function calculatePumpEfficiency() {
     // Константы
     const g = 9.81;                   // Ускорение свободного падения [м/с²]
     const dh_pns = 100;               // Подъём насоса [м]
-    const h_inlet_first_pump = 10;    // Напор на входе первого насоса [м]
+    const h_inlet_first_pump = 60;    // Напор на входе первого насоса [м]
 
     //
     // Массивы для промежуточных расчетов
@@ -118,7 +118,7 @@ export function calculatePumpEfficiency() {
         if (i == 0) {
             h_out[i] = h_in[0] + dh_pump[i]
         } else {
-            h_in[i] = h_out[i - 1] - head_loss[i - 1]
+            h_in[i] = h_out[i - 1] - head_loss[i - 1] 
             h_out[i] = h_in[i] + dh_pump[i]
         }
     }
@@ -172,5 +172,6 @@ export function calculatePumpEfficiency() {
         dh_pump,
         pumpPerformanceResults
     };
+    console.log("dataObject:",dataObject)
     return dataObject;
 }

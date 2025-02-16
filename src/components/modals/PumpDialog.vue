@@ -4,12 +4,14 @@ import formAddPump from "../base/BaseForm.vue";
 import { useCalculationsStore } from "../../stores/calculations";
 import ResultCalc from "./ResultCalc.vue";
 import Notification from "../utils/Notification.vue";
+import TableElevationMarks from "../forms/coordinatsInterpolation.vue"
 
 export default defineComponent({
   components: {
     formAddPump,
     ResultCalc,
     Notification,
+    TableElevationMarks
   },
   props: {
     show: {
@@ -23,7 +25,7 @@ export default defineComponent({
     const drawerWidth = ref("700px");
     const isMobile = ref(false);
     const calculationsStore = useCalculationsStore();
-    // console.log("calculationsStore:",calculationsStore);  
+    // console.log("calculationsStore:",calculationsStore);
     const showResults = ref(false);
 
     const updateDrawerWidth = () => {
@@ -67,7 +69,6 @@ export default defineComponent({
     };
 
     const handleCalculate = () => {
-      const isValid = calculationsStore.pumpResults.consumptionStation.every(value => value >= 0);
       calculationsStore.setCalculateClicked(true);
       calculationsStore.updateCalculations();
       showResults.value = true;
@@ -104,7 +105,7 @@ export default defineComponent({
         </v-tooltip>
       </v-btn>
 
-      <ResultCalc v-if="showResults"/>
+      <ResultCalc v-if="showResults" />
     </div>
 
     <v-btn
@@ -118,8 +119,10 @@ export default defineComponent({
       Добавить
       <v-tooltip activator="parent" location="start"> Добавить НПС </v-tooltip>
     </v-btn>
-  </n-flex>
 
+
+  </n-flex>
+<TableElevationMarks></TableElevationMarks>
   <n-drawer
     v-model:show="localShow"
     :width="drawerWidth"
@@ -137,7 +140,7 @@ export default defineComponent({
         ></v-btn>
       </div>
       <div class="mt-4"></div>
-      <v-divider></v-divider> 
+      <v-divider></v-divider>
       <div class="mt-4"></div>
       <v-divider></v-divider>
 
@@ -160,8 +163,8 @@ export default defineComponent({
   top: 0;
   right: 0;
   left: 0;
-  margin:  0;
-  z-index: 2;
+  margin: 0;
+  z-index: 5;
 }
 
 .dialog-title {

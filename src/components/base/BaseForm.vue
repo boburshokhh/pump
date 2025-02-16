@@ -42,7 +42,7 @@
         </div>
       </n-collapse-item>
     </n-collapse>
-
+    <SegmentedButtons v-model="data.connectionType" :is-dark="$vuetify.theme.dark"/>
     <v-form ref="form" v-model="isFormValid">
       <div>
         <PumpForm
@@ -84,10 +84,13 @@ import StationParameters from "../forms/StationParameters.vue";
 import { useToast } from "vue-toastification";
 import Notification from "../utils/Notification.vue";
 import dialogClickCalck from "../utils/dialogClickCalck.vue";
+import SegmentedButtons from "../utils/SegmentedButtons.vue";
+// import calculationsStore from "../../stores/calculations";
 
 export default {
   created() {
     if (this.editMode && this.stationData) {
+      console.log("this.stationData", this.stationData);
       this.initializeEditMode();
     }
     this.optionsStore = useOptionsStore();
@@ -138,6 +141,7 @@ export default {
     useToast,
     Notification,
     dialogClickCalck,
+    SegmentedButtons,
   },
   props: {
     pumpStationIndex: {
@@ -202,6 +206,7 @@ export default {
     initializeEditMode() {
       this.data = {
         station: this.stationData.station || "",
+        connectionType: this.stationData.connectionType || 'serial',
         flow: this.stationData.flow || 0,
         density: this.stationData.liquidParameters?.density || 850,
         viscosity: this.stationData.liquidParameters?.viscosity || 10,
@@ -366,8 +371,11 @@ export default {
           this.getNotificationOptions("Успех", notificationMessage),
           { type: "success", timeout: 3000 }
         );
+        // console.log("calculationsStore.pumpResultsFORM", calculationsStore.pumpResults);
         this.$refs.dialogClickCalck.showDialog();
         this.$emit("close");
+        // calculationsStore.setCalculateClicked(true);
+        
       } catch (error) {
         // console.error("Ошибка при сохранении станции:", error);
         this.showNotification(

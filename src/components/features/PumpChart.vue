@@ -25,11 +25,11 @@ import {
   onMounted,
   reactive,
   watch,
-  shallowRef ,
+  shallowRef,
 } from "vue";
 import Chart from "chart.js/auto";
 import zoomPlugin from "chartjs-plugin-zoom";
-import { useCalculationsStore } from '../../stores/calculations';
+import { useCalculationsStore } from "../../stores/calculations";
 
 Chart.register(zoomPlugin);
 
@@ -46,6 +46,7 @@ export default defineComponent({
     const chartInstance = shallowRef(null);
     const calculationsStore = useCalculationsStore();
 
+
     // Добавляем новый watch для отслеживания нажатия кнопки
     watch(
       () => calculationsStore.calculateClicked,
@@ -60,21 +61,24 @@ export default defineComponent({
 
     // Отслеживаем изменения в store
     watch(
-      () => calculationsStore.pumpResults,
+      () => 
+      calculationsStore.pumpResults,
       (newResults) => {
         // console.log("Store results changed:", newResults);
         if (chartInstance.value && newResults) {
           const newData = processData(newResults);
-          
+
           // Плавное обновление данных
           chartInstance.value.data.datasets[0].data = newData;
-          
+
           // Плавное обновление пределов оси Y
-          chartInstance.value.options.scales.y.min = Math.min(...newResults.h_in) * 0.9;
-          chartInstance.value.options.scales.y.max = Math.max(...newResults.h_out) * 1.1;
-          
+          chartInstance.value.options.scales.y.min =
+            Math.min(...newResults.h_in) * 0.9;
+          chartInstance.value.options.scales.y.max =
+            Math.max(...newResults.h_out) * 1.1;
+
           // Применяем анимацию при обновлении
-          chartInstance.value.update('active');
+          chartInstance.value.update("active");
         }
       },
       { deep: true }
@@ -124,14 +128,80 @@ export default defineComponent({
         },
       ],
     });
+    // Generate more interpolation points for heightLineData
+    const generateInterpolatedPoints = () => {
+      const basePoints = [
+      { x: 0, y: 150 },
+      { x: 100, y: 160 },
+      { x: 200, y: 155 },
+      { x: 300, y: 170 },
+      { x: 400, y: 165 },
+      { x: 500, y: 175 },
+      { x: 600, y: 180 },
+      { x: 700, y: 190 },
+      { x: 800, y: 195 },
+      { x: 900, y: 200 },
+      { x: 1000, y: 205 }
+      ];
+      
+      const interpolatedPoints = [];
+      for (let i = 0; i < basePoints.length - 1; i++) {
+      const current = basePoints[i];
+      const next = basePoints[i + 1];
+      // Генерируем точку каждый километр (100 точек между базовыми точками)
+      const steps = 100;
+      
+      for (let j = 0; j <= steps; j++) {
+        const x = current.x + (next.x - current.x) * (j / steps);
+        // Используем кубическую интерполяцию для более плавной кривой
+        const t = j / steps;
+        const t2 = t * t;
+        const t3 = t2 * t;
+        const y = current.y * (1 - t3) + next.y * t3;
+        
+        interpolatedPoints.push({ x, y });
+      }
+      }
+      return interpolatedPoints;
+    };
 
-    const range = ref([0, 600]);
+    const heightLineData = generateInterpolatedPoints();
+
+    const range = ref([0, 800]);
     onMounted(() => {
       const ctx = chartCanvas.value.getContext("2d");
-
       chartInstance.value = new Chart(ctx, {
         type: "line",
-        data: originalData,
+        data: {
+          datasets: [
+            {
+              label: "Гидравлический уклон",
+              data: processData(calculationsStore.pumpResults),
+              borderColor: "rgba(75, 192, 192, 1)",
+              backgroundColor: "rgba(75, 192, 192, 0.2)",
+              tension: 0,
+              fill: false,
+            },
+            {
+                label: "Высотные отметки трубы",
+                data: heightLineData, // Статичные координаты
+                borderColor: "rgba(255, 99, 132, 1)",
+                backgroundColor: "rgba(255, 99, 132, 0.2)",
+                tension: 0.3,
+                fill: false,
+                cubicInterpolationMode: 'monotone',
+                borderWidth: 1.5,
+                pointRadius: 1, // Очень маленькие точки
+                pointHoverRadius: 3, // Немного увеличиваем при наведении
+                pointBackgroundColor: "rgba(255, 99, 132, 0.8)",
+                pointBorderColor: "rgba(255, 99, 132, 1)",
+                pointHoverBackgroundColor: "rgba(255, 99, 132, 1)",
+                pointHoverBorderColor: "rgba(255, 255, 255, 1)",
+                pointBorderWidth: 1,
+                spanGaps: true
+            },
+          ],
+        },
         options: {
           responsive: true,
           maintainAspectRatio: false,
@@ -144,19 +214,19 @@ export default defineComponent({
               enabled: true,
               mode: "nearest",
               intersect: true,
-              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              backgroundColor: "rgba(0, 0, 0, 0.8)",
               titleFont: {
                 size: 14,
-                weight: 'bold'
+                weight: "bold",
               },
               bodyFont: {
-                size: 13
+                size: 13,
               },
               padding: 12,
               displayColors: false,
               callbacks: {
                 title: (items) => {
-                  if (!items.length) return '';
+                  if (!items.length) return "";
                   const item = items[0];
                   return `Участок ${Math.floor(item.dataIndex / 2) + 1}`;
                 },
@@ -164,7 +234,9 @@ export default defineComponent({
                   if (!context || !context.raw) return null;
                   const labels = [
                     `Напор: ${context.raw.y.toFixed(2)} м`,
-                    `Протяженность трубопровода: ${context.raw.x.toFixed(2)} км`
+                    `Протяженность трубопровода: ${context.raw.x.toFixed(
+                      2
+                    )} км`,
                   ];
                   return labels;
                 },
@@ -175,7 +247,7 @@ export default defineComponent({
               pan: {
                 enabled: true,
                 mode: "xy",
-                modifierKey: 'shift',
+                modifierKey: "shift",
                 speed: 10,
                 threshold: 10,
               },
@@ -183,7 +255,7 @@ export default defineComponent({
                 wheel: {
                   enabled: true,
                   speed: 0.1,
-                  modifierKey: 'ctrl',
+                  modifierKey: "ctrl",
                 },
                 pinch: {
                   enabled: true,
@@ -191,14 +263,14 @@ export default defineComponent({
                 mode: "xy",
                 drag: {
                   enabled: true,
-                  backgroundColor: 'rgba(75, 192, 192, 0.3)',
-                  borderColor: 'rgba(75, 192, 192, 0.8)',
+                  backgroundColor: "rgba(75, 192, 192, 0.3)",
+                  borderColor: "rgba(75, 192, 192, 0.8)",
                   borderWidth: 1,
                 },
                 limits: {
-                  x: {min: 'original', max: 'original'},
-                  y: {min: 'original', max: 'original'}
-                }
+                  x: { min: "original", max: "original" },
+                  y: { min: "original", max: "original" },
+                },
               },
             },
           },
@@ -222,56 +294,56 @@ export default defineComponent({
           },
           animation: {
             duration: 750,
-            easing: 'easeInOutQuart',
-            mode: 'active',
+            easing: "easeInOutQuart",
+            mode: "active",
             animations: {
               numbers: {
-                type: 'number',
+                type: "number",
                 duration: 1000,
               },
               x: {
-                type: 'number',
+                type: "number",
                 from: 0,
                 duration: 1000,
               },
               y: {
-                type: 'number',
+                type: "number",
                 from: 0,
                 duration: 1000,
-              }
+              },
             },
-            onProgress: function(animation) {
+            onProgress: function (animation) {
               // Можно добавить действия во время анимации
             },
-            onComplete: function(animation) {
+            onComplete: function (animation) {
               // Можно добавить действия после завершения анимации
-            }
+            },
           },
           transitions: {
             active: {
               animation: {
-                duration: 100
-              }
+                duration: 100,
+              },
             },
             resize: {
               animation: {
-                duration: 200
-              }
+                duration: 200,
+              },
             },
             show: {
               animations: {
                 y: {
-                  from: 0
-                }
-              }
+                  from: 0,
+                },
+              },
             },
             hide: {
               animations: {
                 y: {
-                  to: 0
-                }
-              }
-            }
+                  to: 0,
+                },
+              },
+            },
           },
           responsiveAnimationDuration: 0,
           hover: {

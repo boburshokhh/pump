@@ -1,5 +1,5 @@
 <template>
-  <div class="pump-edit mt-8">
+  <div class="pump-edit">
     <v-row v-for="(pump, index) in pumps" :key="pump.id" class="pump-container rounded elevation-1 pa-3 ">
       <v-col cols="12">
         <div class="pump-header d-flex justify-space-between align-center">
@@ -160,7 +160,9 @@ export default {
 .pump-add {
   margin-top: 12px;
 }
-
+.pump-edit{
+  margin-top: 12px;
+}
 .v-overlay--active {
   z-index: 9999 !important;
   /* Установите значение выше конфликтующих */
