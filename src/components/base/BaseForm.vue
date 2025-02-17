@@ -42,7 +42,11 @@
         </div>
       </n-collapse-item>
     </n-collapse>
-    <SegmentedButtons v-model="data.connectionType" :is-dark="$vuetify.theme.dark"/>
+    <SegmentedButtons 
+      v-model="data.connectionType" 
+      :is-dark="$vuetify.theme.dark"
+      @update:modelValue="handleConnectionTypeChange"
+    />
     <v-form ref="form" v-model="isFormValid">
       <div>
         <PumpForm
@@ -88,12 +92,16 @@ import SegmentedButtons from "../utils/SegmentedButtons.vue";
 // import calculationsStore from "../../stores/calculations";
 
 export default {
+  setup() {
+    const optionsStore = useOptionsStore();
+    return { optionsStore };
+  },
+  
   created() {
     if (this.editMode && this.stationData) {
       console.log("this.stationData", this.stationData);
       this.initializeEditMode();
     }
-    this.optionsStore = useOptionsStore();
     this.loadOptions();
   },
   computed: {
@@ -167,6 +175,7 @@ export default {
           name: "",
           numOfPumps: 0,
           fact_rpm: 0,
+          connectionType: 'serial'
         },
       ],
       data: {
@@ -180,6 +189,7 @@ export default {
         roughness: 0.1,
         pressure: 10,
         afp_consumption: 1,
+        connectionType: 'serial'
       },
       errors: {
         station: "",
@@ -234,14 +244,14 @@ export default {
     },
 
     async loadOptions() {
-      let res = await this.optionsStore.loadOptions();
-      // console.log("res", res);
+      await this.optionsStore.loadOptions();
     },
     addForm() {
       const newPump = {
         name: "",
         numOfPumps: 0,
         fact_rpm: 0,
+        connectionType: 'serial'
       };
       this.pumps.push(newPump);
     },
@@ -371,13 +381,10 @@ export default {
           this.getNotificationOptions("Успех", notificationMessage),
           { type: "success", timeout: 3000 }
         );
-        // console.log("calculationsStore.pumpResultsFORM", calculationsStore.pumpResults);
         this.$refs.dialogClickCalck.showDialog();
         this.$emit("close");
-        // calculationsStore.setCalculateClicked(true);
         
       } catch (error) {
-        // console.error("Ошибка при сохранении станции:", error);
         this.showNotification(
           this.getNotificationOptions(
             "Ошибка",
@@ -444,6 +451,33 @@ export default {
 
       return isValid;
     },
+
+    handleConnectionTypeChange(type) {
+      console.log('Connection type changed in BaseForm:', type);
+      this.data.connectionType = type;
+      
+      // Обновляем состояние в store
+      this.optionsStore.setPumpType(type);
+      
+      // Обновляем тип подключения для всех насосов
+      this.pumps.forEach(pump => {
+        pump.connectionType = type;
+      });
+    },
   },
+  mounted() {
+    this.loadOptions();
+  },
+  watch: {
+    'data.connectionType': {
+      immediate: true,
+      handler(newType) {
+        if (newType && this.optionsStore) {
+          console.log('Data connection type changed in BaseForm:', newType);
+          this.optionsStore.setPumpType(newType);
+        }
+      }
+    }
+  }
 };
 </script>

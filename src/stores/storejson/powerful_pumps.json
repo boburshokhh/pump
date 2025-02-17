@@ -1,0 +1,48 @@
+{
+    "powerful_pumps": [
+        {
+            "id": 101,
+            "name": "HM 10000-350",
+            "type": "Центробежный мощный",
+            "max_capacity_m3_per_hour": 10000,
+            "min_capacity_m3_per_hour": 1000,
+            "nominal_rotation_speed": 3100,
+            "efficiency_percent": 92,
+            "a_approc": 420,
+            "b_approc": 0.184e-5
+        },
+        {
+            "id": 102,
+            "name": "HM 7500-320",
+            "type": "Центробежный мощный",
+            "max_capacity_m3_per_hour": 7500,
+            "min_capacity_m3_per_hour": 750,
+            "nominal_rotation_speed": 3100,
+            "efficiency_percent": 91,
+            "a_approc": 385,
+            "b_approc": 0.192e-5
+        },
+        {
+            "id": 103,
+            "name": "HM 5000-300",
+            "type": "Центробежный мощный",
+            "max_capacity_m3_per_hour": 5000,
+            "min_capacity_m3_per_hour": 500,
+            "nominal_rotation_speed": 3100,
+            "efficiency_percent": 90,
+            "a_approc": 365,
+            "b_approc": 0.220e-5
+        },
+        {
+            "id": 104,
+            "name": "HM 3600-280",
+            "type": "Центробежный мощный",
+            "max_capacity_m3_per_hour": 3600,
+            "min_capacity_m3_per_hour": 360,
+            "nominal_rotation_speed": 3000,
+            "efficiency_percent": 89,
+            "a_approc": 340,
+            "b_approc": 0.379e-5
+        }
+    ]
+} 

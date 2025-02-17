@@ -19,7 +19,10 @@ export function calculatePumpEfficiency() {
     // Получение данных из хранилищ
     const storePumpsStations = useIndexStore();
     const pumps = useOptionsStore();
-    const getPumpsList = pumps.selectOptions.centrifugal_pumps;
+    const getPumpsList = {
+        ...pumps.selectOptions.centrifugal_pumps,
+        ...pumps.selectOptions.powerful_pumps
+    };
     const pumps_stations = storePumpsStations.getStations;
 
     // Инициализация массивов для хранения параметров
@@ -63,20 +66,50 @@ export function calculatePumpEfficiency() {
     );
 
     const selectedPumps = pumpstationids.map(stationIds =>
-        stationIds.map(id => getPumpsList.find(pump => pump.id === id))
+        stationIds.map(id => {
+            // Ищем насос сначала в обычных, потом в мощных насосах
+            const pump = pumps.selectOptions.centrifugal_pumps.find(p => p.id === id) ||
+                        pumps.selectOptions.powerful_pumps.find(p => p.id === id);
+            
+            if (!pump) {
+                console.warn(`Насос с ID ${id} не найден`);
+                return null;
+            }
+            return pump;
+        }).filter(pump => pump !== null) // Убираем null значения
     );
 
     // Расчёт напора для каждой станции
-    h_in[0] = h_inlet_first_pump + dh_pns
+    h_in[0] = h_inlet_first_pump + dh_pns;
     for (let i = 0; i < selectedPumps.length; i++) {
         let stationFlow = 0;
+        
         selectedPumps[i].forEach((pump, j) => {
-            const nominal_rotation_speed = pump.nominal_rotation_speed
-            const fact_rotation_speed = pumps_stations[i].pumps[j].fact_rpm
+            if (!pump) return; // Пропускаем, если насос не найден
+
+            const nominal_rotation_speed = pump.nominal_rotation_speed;
+            const fact_rotation_speed = pumps_stations[i].pumps[j].fact_rpm;
             const numOfPumps = pumps_stations[i].pumps[j].numOfPumps;
-            const pumpFlow = (pump.a_approc*Math.pow(fact_rotation_speed/nominal_rotation_speed,2) - pump.b_approc * Math.pow(consumptionStation[i], 2)) * numOfPumps;
-            stationFlow += pumpFlow;
+            
+            let Q_single_pump;
+            if (pumps_stations[i].connectionType === 'serial') {
+                Q_single_pump = consumptionStation[i];
+            } else {
+                Q_single_pump = consumptionStation[i] / numOfPumps;
+            }
+            
+            const dh_single_pump = pump.a_approc * Math.pow(fact_rotation_speed/nominal_rotation_speed, 2) 
+                                  - pump.b_approc * Math.pow(Q_single_pump, 2);
+            
+            if (pumps_stations[i].connectionType === 'serial') {
+                stationFlow += dh_single_pump * numOfPumps;
+            } else {
+                if (j === 0) {
+                    stationFlow = dh_single_pump;
+                }
+            }
         });
+        
         dh_pump.push(stationFlow);
     }
     // console.log("dh_pump:",dh_pump)
@@ -129,31 +162,45 @@ export function calculatePumpEfficiency() {
     const N_potreb = []
     // Интеграция расчета эффективности насосов
     const pumpPerformanceResults = pumps_stations.map((station, index) => {
-        // Массив для хранения результатов насосов станции
-        const stationPumpsResults = station.pumps.map((pump, pumpIndex) => {
-            const selectedPump = getPumpsList.find(p => p.id === pump.id);
+        const stationPumpsResults = station.pumps.map((pumpStation, pumpIndex) => {
+            const selectedPump = pumps.selectOptions.centrifugal_pumps.find(p => p.id === pumpStation.id) ||
+                               pumps.selectOptions.powerful_pumps.find(p => p.id === pumpStation.id);
+
+            if (!selectedPump) {
+                console.warn(`Насос с ID ${pumpStation.id} не найден`);
+                return null;
+            }
+
             const nominal_rpm = selectedPump.nominal_rotation_speed;
-            const fact_rpm = pump.fact_rpm;
-            const numOfPumps = pump.numOfPumps;
-            const a = selectedPump.a_approc;
-            const b = selectedPump.b_approc;
+            const fact_rpm = pumpStation.fact_rpm;
+            const numOfPumps = pumpStation.numOfPumps;
             const efficiency = selectedPump.efficiency_percent;
-    
-            const dh_single = a * Math.pow(fact_rpm / nominal_rpm, 2) - b * Math.pow(consumptionStation[index], 2);
-            const N = densityLiquid[index] * g * (consumptionStation[index] / 3600) * dh_single;
+            
+            let Q_single_pump;
+            if (station.connectionType === 'serial') {
+                Q_single_pump = consumptionStation[index];
+            } else {
+                Q_single_pump = consumptionStation[index] / numOfPumps;
+            }
+            
+            const dh_single = selectedPump.a_approc * Math.pow(fact_rpm / nominal_rpm, 2) 
+                             - selectedPump.b_approc * Math.pow(Q_single_pump, 2);
+            
+            const N = densityLiquid[index] * g * (Q_single_pump / 3600) * dh_single;
             const N_potreb = N / (efficiency / 100);
-    
+            
             return {
-                pumpId: pump.id,
-                name: pump.name,
+                pumpId: pumpStation.id,
+                name: pumpStation.name,
                 head: dh_single,
                 power: N_potreb,
                 totalPower: N_potreb * numOfPumps,
             };
-        });
-    
-        const totalStationPower = stationPumpsResults.reduce((sum, pumpResult) => sum + pumpResult.totalPower, 0);
-    
+        }).filter(result => result !== null); // Убираем null значения
+        
+        const totalStationPower = stationPumpsResults.reduce((sum, pumpResult) => 
+            sum + pumpResult.totalPower, 0);
+        
         return {
             pumps: stationPumpsResults,
             totalPower: totalStationPower,

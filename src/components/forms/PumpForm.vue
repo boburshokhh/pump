@@ -62,6 +62,7 @@
 import { VNumberInput } from "vuetify/labs/VNumberInput";
 import DeleteDialog from "../utils/DeleteDialog.vue";
 import { useOptionsStore } from "../../stores/options"
+import { computed } from 'vue'
 
 export default {
   components: {
@@ -70,9 +71,17 @@ export default {
   },
   setup() {
     const optionsStore = useOptionsStore();
+    const options = computed(() => {
+      const currentType = optionsStore.currentPumpType;
+      const pumps = optionsStore.availablePumps;
+      console.log('Current type in PumpForm:', currentType);
+      console.log('Available pumps in PumpForm:', pumps);
+      return pumps;
+    });
+    
     return {
       optionsStore,
-      options: optionsStore.selectOptions.centrifugal_pumps, // Передаем options сразу
+      options
     };
   },
   mounted() {
@@ -132,11 +141,50 @@ export default {
       this.isDeleteDialogVisible = false;
       this.pumpToDelete = null;
     },
+    updatePumpsList(connectionType) {
+      if (connectionType) {
+        console.log('Updating pumps list for connection type:', connectionType);
+        this.optionsStore.setPumpType(connectionType);
+        
+        // Очищаем выбранные насосы
+        this.selectedPumps = [];
+        
+        // Сбрасываем параметры насосов с сохранением типа подключения
+        this.pumps.forEach(pump => {
+          pump.id = null;
+          pump.name = '';
+          pump.numOfPumps = 1;
+          pump.fact_rpm = 3000;
+          pump.connectionType = connectionType;
+        });
+      }
+    }
   },
   watch: {
     selectedPump(newVal) {
       console.log("selectedPump", newVal);
     },
+    'pumps[0].connectionType': {
+      immediate: true,
+      handler(newType) {
+        if (newType) {
+          console.log('Connection type changed in PumpForm:', newType);
+          this.updatePumpsList(newType);
+        }
+      }
+    },
+    
+    // Добавим отслеживание изменений options
+    options: {
+      immediate: true,
+      deep: true,
+      handler(newOptions) {
+        console.log('Options changed in PumpForm:', newOptions);
+        if (this.selectedPumps.length === 0) {
+          this.selectedPumps = new Array(this.pumps.length).fill(null);
+        }
+      }
+    }
   },
 };
 </script>

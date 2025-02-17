@@ -51,10 +51,10 @@
 
 <script>
 import { VNumberInput } from "vuetify/labs/VNumberInput";
-    
+
 export default {
   components: {
-    VNumberInput,
+    VNumberInput
   },
   props: {
     data: {
@@ -64,7 +64,7 @@ export default {
         station: '',
         flow: null,
         length: null,
-        afp_consumption: null,
+        afp_consumption: null
       })
     },
     editMode: {
@@ -75,7 +75,7 @@ export default {
       type: Object,
       required: true,
     },
-  },
+  }
 };
 </script>
 
