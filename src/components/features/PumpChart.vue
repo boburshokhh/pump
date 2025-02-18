@@ -141,33 +141,19 @@ export default defineComponent({
           tension: 0,
           fill: false,
           borderWidth: 2,
-          pointRadius: 4,
-          pointHoverRadius: 6,
+          pointRadius: 1,
+          pointHoverRadius: 3,
         },
         {
           label: "Высотные отметки трубы",
           data: heightData,
           borderColor: "rgba(255, 0, 0, 1)",
-          backgroundColor: "rgba(255, 0, 0, 0.1)",
-          tension: 0.2,
+          tension: 0,
           fill: false,
           cubicInterpolationMode: 'monotone',
           borderWidth: 1,
-          pointRadius: ({ chart }) => {
-            const zoomLevel = chart.getZoomLevel();
-            return zoomLevel > 1 ? 2 : 0;
-          },
-          pointHoverRadius: 6,
-          pointBackgroundColor: "rgba(255, 0, 0, 0.9)",
-          pointBorderColor: "#fff",
-          pointHoverBackgroundColor: "rgba(255, 0, 0, 1)",
-          pointHoverBorderColor: "#fff",
-          pointBorderWidth: 2,
-          spanGaps: true,
-          sampling: {
-            enabled: true,
-            threshold: 50,
-          },
+          pointRadius: 1,
+          pointHoverRadius: 1,
         },
       ];
 

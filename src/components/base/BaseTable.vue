@@ -152,12 +152,17 @@
               <td>{{ item.length }}</td>
               <td>
                 <div class="d-flex align-center">
-                  <span 
-                    @click="openAFPDialog(item)"
-                    class="afp-value"
-                  >
-                    {{ item.afp_consumption }}
-                  </span>
+                  <n-tooltip trigger="hover">
+                    <template #trigger>
+                      <span 
+                        @click="openAFPDialog(item)" 
+                        class="afp-value clickable-text"
+                      >
+                        {{ item.afp_consumption }}
+                      </span>
+                    </template>
+                    Нажмите, чтобы открыть диалог
+                  </n-tooltip>
                 </div>
                 <AFPChartDialog
                   :show="showAFPDialog"
@@ -167,6 +172,7 @@
                   :flow="selectedStation?.flow"
                 />
               </td>
+              
               <td class="pumps-column">
                 <div
                   v-for="pump in item.pumps"
@@ -1209,5 +1215,14 @@ export default {
 
 .afp-value:hover {
   background-color: rgba(var(--v-theme-primary), 0.1);
+}
+.clickable-text {
+  cursor: pointer;
+  text-decoration: none;
+  transition: text-decoration 0.2s;
+}
+
+.clickable-text {
+  text-decoration: underline;
 }
 </style>

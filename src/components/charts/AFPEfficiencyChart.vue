@@ -99,33 +99,8 @@ const props = defineProps({
 const showTooltip = ref(true)
 const chartRef = ref(null)
 
-// Ключевые точки для графика
-const keyPoints = [
-  { x: 0, y: 0 },
-  { x: 2.2, y: 25 },
-  { x: 4.8, y: 45 },
-  { x: 30, y: 45 } // Максимальное значение
-]
-
 function calculateEfficiency(concentration) {
-  if (concentration <= 0) return 0
-  if (concentration >= 4.8) return 45
-
-  // Находим ближайшие точки для интерполяции
-  let startPoint, endPoint
-  for (let i = 0; i < keyPoints.length - 1; i++) {
-    if (concentration >= keyPoints[i].x && concentration <= keyPoints[i + 1].x) {
-      startPoint = keyPoints[i]
-      endPoint = keyPoints[i + 1]
-      break
-    }
-  }
-
-  if (!startPoint || !endPoint) return 45 // Если концентрация выше максимальной
-
-  // Линейная интерполяция между точками
-  const slope = (endPoint.y - startPoint.y) / (endPoint.x - startPoint.x)
-  return startPoint.y + slope * (concentration - startPoint.x)
+  return Math.round(Math.pow(concentration, 0.5) * 100) / 10
 }
 
 const chartData = computed(() => {
@@ -137,21 +112,12 @@ const chartData = computed(() => {
       {
         label: 'Эффективность АФП',
         data: points.map(x => calculateEfficiency(x)),
-        borderColor: '#22c55e', // Зеленый цвет
+        borderColor: '#22c55e',
         backgroundColor: 'rgba(34, 197, 94, 0.1)',
         tension: 0.4,
         fill: true,
         pointRadius: 0,
         borderWidth: 2
-      },
-      {
-        label: 'Ключевые точки',
-        data: keyPoints,
-        borderColor: '#000',
-        backgroundColor: '#fff',
-        pointRadius: 5,
-        pointBorderWidth: 2,
-        showLine: false
       },
       {
         label: 'Текущая точка',
@@ -255,7 +221,7 @@ const chartOptions = {
         }
       },
       min: 0,
-      max: 50,
+      max: 60,
       grid: {
         color: 'rgba(0, 0, 0, 0.1)',
         drawBorder: false,

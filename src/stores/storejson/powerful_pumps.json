@@ -31,7 +31,7 @@
             "nominal_rotation_speed": 3100,
             "efficiency_percent": 90,
             "a_approc": 365,
-            "b_approc": 0.220e-5
+            "b_approc": 0.220e-4
         },
         {
             "id": 104,
