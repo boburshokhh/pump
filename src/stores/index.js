@@ -5,7 +5,7 @@ export const useIndexStore = defineStore("stationStore", {
     stations: [
       {
         station: "Станция 1",
-        flow: 2500,
+        flow: 2700,
         connectionType: 'serial',
         pumps: [
           { id: 1, name: "HM 1250-260", numOfPumps: 2, fact_rpm: 2900 },
@@ -16,7 +16,7 @@ export const useIndexStore = defineStore("stationStore", {
         length: 100,
         power: "50",
         afpType: "Тип 1",
-        afp_consumption: 2.5,
+        afp_consumption: 3.53,
         liquidParameters: {
           density: 850,
           viscosity: 10,
@@ -41,7 +41,7 @@ export const useIndexStore = defineStore("stationStore", {
         length: 90,
         power: "70",
         afpType: "Тип 2",
-        afp_consumption: 4.2,
+        afp_consumption: 1.2,
         liquidParameters: {
           density: 850,
           viscosity: 10,
@@ -55,7 +55,7 @@ export const useIndexStore = defineStore("stationStore", {
       },
       {
         station: "Станция 3",
-        flow: 3000,
+        flow: 3100,
         connectionType: 'serial',
         pumps: [
           { id: 3, name: "HM 5000-210", numOfPumps: 2, fact_rpm: 2980 },
@@ -65,7 +65,7 @@ export const useIndexStore = defineStore("stationStore", {
         length: 110,
         power: "90",
         afpType: "Тип 3",
-        afp_consumption: 3.8,
+        afp_consumption: 1.8,
         liquidParameters: {
           density: 850,
           viscosity: 10,
@@ -79,7 +79,7 @@ export const useIndexStore = defineStore("stationStore", {
       },
       {
         station: "Станция 4",
-        flow: 2880,
+        flow: 3180,
         connectionType: 'serial',
         pumps: [
           { id: 3, name: "HM 2500-230 (подача 1800 м³/ч)", numOfPumps: 2, fact_rpm: 2800 },
@@ -89,7 +89,7 @@ export const useIndexStore = defineStore("stationStore", {
         length: 110,
         power: "100",
         afpType: "Тип 4",
-        afp_consumption: 3.0,
+        afp_consumption: 1.0,
         liquidParameters: {
           density: 850,
           viscosity: 10,
@@ -103,7 +103,7 @@ export const useIndexStore = defineStore("stationStore", {
       },
       {
         station: "Станция 5",
-        flow: 3000,
+        flow: 3100,
         connectionType: 'serial',
         pumps: [
           { id: 3, name: "HM 2500-230 (подача 1800 м³/ч)", numOfPumps: 2, fact_rpm: 2900 },
@@ -113,7 +113,7 @@ export const useIndexStore = defineStore("stationStore", {
         length: 110,
         power: "100",
         afpType: "Тип 4",
-        afp_consumption: 3.5,
+        afp_consumption: 1.5,
         liquidParameters: {
           density: 850,
           viscosity: 10,

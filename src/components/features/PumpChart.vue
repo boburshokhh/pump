@@ -110,10 +110,7 @@ export default defineComponent({
         y: point.y
       }));
 
-      chartInstance.value.data.datasets[0].data = hydraulicData;
-      chartInstance.value.data.datasets[1].data = heightData;
-
-      // Update axis limits
+      // Вычисляем пределы для осей
       const maxX = Math.max(
         ...hydraulicData.map(p => p.x),
         ...heightData.map(p => p.x)
@@ -127,11 +124,77 @@ export default defineComponent({
         ...heightData.map(p => p.y)
       ) * 1.1;
 
+      // Сохраняем исходные пределы как свойства экземпляра
+      chartInstance.value._originalLimits = {
+        minX: 0,
+        maxX,
+        minY,
+        maxY
+      };
+
+      chartInstance.value.data.datasets = [
+        {
+          label: "Гидравлический уклон",
+          data: hydraulicData,
+          borderColor: "rgba(75, 192, 192, 1)",
+          backgroundColor: "rgba(75, 192, 192, 0.2)",
+          tension: 0,
+          fill: false,
+          borderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+        },
+        {
+          label: "Высотные отметки трубы",
+          data: heightData,
+          borderColor: "rgba(255, 0, 0, 1)",
+          backgroundColor: "rgba(255, 0, 0, 0.1)",
+          tension: 0.2,
+          fill: false,
+          cubicInterpolationMode: 'monotone',
+          borderWidth: 1,
+          pointRadius: ({ chart }) => {
+            const zoomLevel = chart.getZoomLevel();
+            return zoomLevel > 1 ? 2 : 0;
+          },
+          pointHoverRadius: 6,
+          pointBackgroundColor: "rgba(255, 0, 0, 0.9)",
+          pointBorderColor: "#fff",
+          pointHoverBackgroundColor: "rgba(255, 0, 0, 1)",
+          pointHoverBorderColor: "#fff",
+          pointBorderWidth: 2,
+          spanGaps: true,
+          sampling: {
+            enabled: true,
+            threshold: 50,
+          },
+        },
+      ];
+
+      chartInstance.value.options.scales.x.min = 0;
       chartInstance.value.options.scales.x.max = maxX;
       chartInstance.value.options.scales.y.min = minY;
       chartInstance.value.options.scales.y.max = maxY;
 
       chartInstance.value.update('active');
+    };
+
+    const resetZoom = () => {
+      if (!chartInstance.value || !chartInstance.value._originalLimits) return;
+
+      const { minX, maxX, minY, maxY } = chartInstance.value._originalLimits;
+
+      // Сначала устанавливаем пределы
+      chartInstance.value.options.scales.x.min = minX;
+      chartInstance.value.options.scales.x.max = maxX;
+      chartInstance.value.options.scales.y.min = minY;
+      chartInstance.value.options.scales.y.max = maxY;
+
+      // Затем сбрасываем зум
+      chartInstance.value.resetZoom();
+      
+      // И обновляем график
+      chartInstance.value.update('none');
     };
 
     onMounted(() => {
@@ -147,6 +210,9 @@ export default defineComponent({
               backgroundColor: "rgba(75, 192, 192, 0.2)",
               tension: 0,
               fill: false,
+              borderWidth: 2,
+              pointRadius: 4,
+              pointHoverRadius: 6,
             },
             {
               label: "Высотные отметки трубы",
@@ -154,20 +220,21 @@ export default defineComponent({
                 x: point.x,
                 y: point.y
               })),
-              borderColor: "rgba(255, 99, 132, 1)",
-              backgroundColor: "rgba(255, 99, 132, 0.2)",
-              tension: 0.3,
+              borderColor: "rgba(255, 0, 0, 1)", // Яркий красный для линии
+              backgroundColor: "rgba(255, 0, 0, 0.1)", // Легкая заливка
+              tension: 0.2,
               fill: false,
               cubicInterpolationMode: 'monotone',
-              borderWidth: 1.5,
-              pointRadius: 1,
-              pointHoverRadius: 3,
-              pointBackgroundColor: "rgba(255, 99, 132, 0.8)",
-              pointBorderColor: "rgba(255, 99, 132, 1)",
-              pointHoverBackgroundColor: "rgba(255, 99, 132, 1)",
-              pointHoverBorderColor: "rgba(255, 255, 255, 1)",
-              pointBorderWidth: 1,
-              spanGaps: true
+              borderWidth: 3, // Увеличиваем толщину линии
+              pointRadius: 0,
+              pointHoverRadius: 6,
+              pointBackgroundColor: "rgba(255, 0, 0, 0.9)", // Ярко-красный для точек
+              pointBorderColor: "#fff", // Белая обводка точек
+              pointHoverBackgroundColor: "rgba(255, 0, 0, 1)",
+              pointHoverBorderColor: "#fff",
+              pointBorderWidth: 2,
+              spanGaps: true,
+              sampling: 'linear',
             },
           ],
         },
@@ -217,8 +284,8 @@ export default defineComponent({
                 enabled: true,
                 mode: "xy",
                 modifierKey: "shift",
-                speed: 10,
-                threshold: 10,
+                speed: 5,
+                threshold: 5,
               },
               zoom: {
                 wheel: {
@@ -237,9 +304,14 @@ export default defineComponent({
                   borderWidth: 1,
                 },
                 limits: {
-                  x: { min: "original", max: "original" },
-                  y: { min: "original", max: "original" },
-                },
+                  x: { 
+                    minRange: 1,
+                    min: 0,
+                  },
+                  y: { 
+                    minRange: 10,
+                  }
+                }
               },
             },
           },
@@ -250,6 +322,7 @@ export default defineComponent({
                 display: true,
                 text: "Длина трубопровода (км)",
               },
+              min: 0, // Устанавливаем минимальное значение в 0
             },
             y: {
               type: "linear",
@@ -257,9 +330,7 @@ export default defineComponent({
                 display: true,
                 text: "Напор (м)",
               },
-              min: Math.min(...calculationsStore.pumpResults.h_in) * 0.9,
-              max: Math.max(...calculationsStore.pumpResults.h_out) * 1.1,
-            },
+            }
           },
           animation: {
             duration: 750,
@@ -321,12 +392,6 @@ export default defineComponent({
         },
       });
     });
-
-    const resetZoom = () => {
-      if (chartInstance.value) {
-        chartInstance.value.resetZoom();
-      }
-    };
 
     const saveChartAsImage = () => {
       if (chartCanvas.value) {
