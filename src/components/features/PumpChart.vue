@@ -30,6 +30,7 @@ import {
 import Chart from "chart.js/auto";
 import zoomPlugin from "chartjs-plugin-zoom";
 import { useCalculationsStore } from "../../stores/calculations";
+import { useCoordinatesStore } from "../../stores/coordinates";
 
 Chart.register(zoomPlugin);
 
@@ -45,60 +46,25 @@ export default defineComponent({
     const chartCanvas = ref(null);
     const chartInstance = shallowRef(null);
     const calculationsStore = useCalculationsStore();
+    const coordinatesStore = useCoordinatesStore();
 
-
-    // Добавляем новый watch для отслеживания нажатия кнопки
+    // Watch for changes in pump results
     watch(
       () => calculationsStore.calculateClicked,
       (newValue) => {
-        if (newValue) {
-          // Обновляем график при нажатии кнопки
-          if (chartInstance.value && calculationsStore.pumpResults) {
-            const newData = processData(calculationsStore.pumpResults);
-            const totalLength = calculationsStore.pumpResults.lengthPipeline.reduce((sum, length) => sum + length, 0);
-
-            // Обновляем данные гидравлического уклона
-            chartInstance.value.data.datasets[0].data = newData;
-
-            // Обновляем высотные отметки
-            const newHeightLineData = generateInterpolatedPoints();
-            chartInstance.value.data.datasets[1].data = newHeightLineData;
-
-            // Обновляем пределы осей
-            chartInstance.value.options.scales.x.min = 0;
-            chartInstance.value.options.scales.x.max = totalLength;
-            chartInstance.value.options.scales.y.min = Math.min(...calculationsStore.pumpResults.h_in) * 0.9;
-            chartInstance.value.options.scales.y.max = Math.max(...calculationsStore.pumpResults.h_out) * 1.1;
-
-            chartInstance.value.update('active');
-          }
+        if (newValue && chartInstance.value && calculationsStore.pumpResults) {
+          updateChart();
           calculationsStore.setCalculateClicked(false);
         }
       }
     );
 
-    // Отслеживаем изменения в store
+    // Watch for changes in coordinates
     watch(
-      () => calculationsStore.pumpResults,
-      (newResults) => {
-        if (chartInstance.value && newResults) {
-          const newData = processData(newResults);
-          const totalLength = newResults.lengthPipeline.reduce((sum, length) => sum + length, 0);
-
-          // Обновляем данные гидравлического уклона
-          chartInstance.value.data.datasets[0].data = newData;
-
-          // Обновляем высотные отметки
-          const newHeightLineData = generateInterpolatedPoints();
-          chartInstance.value.data.datasets[1].data = newHeightLineData;
-
-          // Обновляем пределы осей
-          chartInstance.value.options.scales.x.min = 0;
-          chartInstance.value.options.scales.x.max = totalLength;
-          chartInstance.value.options.scales.y.min = Math.min(...newResults.h_in) * 0.9;
-          chartInstance.value.options.scales.y.max = Math.max(...newResults.h_out) * 1.1;
-
-          chartInstance.value.update('active');
+      () => coordinatesStore.interpolatedPoints,
+      () => {
+        if (chartInstance.value) {
+          updateChart();
         }
       },
       { deep: true }
@@ -125,69 +91,49 @@ export default defineComponent({
 
         currentLength += data.lengthPipeline[i];
 
-        // Добавляем последнюю точку, если это последняя итерация
         if (i === data.lengthPipeline.length - 1) {
           points.push({
             x: currentLength,
-            y: data.h_in[i + 1], // Берем следующее значение h_in
+            y: data.h_in[i + 1],
           });
         }
       }
       return points;
     };
 
-    const originalData = reactive({
-      datasets: [
-        {
-          label: "Гидравлический уклон",
-          data: processData(calculationsStore.pumpResults),
-          borderColor: "rgba(75, 192, 192, 1)",
-          backgroundColor: "rgba(75, 192, 192, 0.2)",
-          tension: 0,
-          fill: false,
-        },
-      ],
-    });
-    // Generate more interpolation points for heightLineData
-    const generateInterpolatedPoints = () => {
-      const basePoints = [
-      { x: 0, y: 150 },
-      { x: 100, y: 160 },
-      { x: 200, y: 155 },
-      { x: 300, y: 170 },
-      { x: 400, y: 165 },
-      { x: 500, y: 175 },
-      { x: 600, y: 180 },
-      { x: 700, y: 190 },
-      { x: 800, y: 195 },
-      { x: 900, y: 200 },
-      { x: 1000, y: 205 }
-      ];
-      
-      const interpolatedPoints = [];
-      for (let i = 0; i < basePoints.length - 1; i++) {
-      const current = basePoints[i];
-      const next = basePoints[i + 1];
-      // Генерируем точку каждый километр (100 точек между базовыми точками)
-      const steps = 100;
-      
-      for (let j = 0; j <= steps; j++) {
-        const x = current.x + (next.x - current.x) * (j / steps);
-        // Используем кубическую интерполяцию для более плавной кривой
-        const t = j / steps;
-        const t2 = t * t;
-        const t3 = t2 * t;
-        const y = current.y * (1 - t3) + next.y * t3;
-        
-        interpolatedPoints.push({ x, y });
-      }
-      }
-      return interpolatedPoints;
+    const updateChart = () => {
+      if (!chartInstance.value) return;
+
+      const hydraulicData = processData(calculationsStore.pumpResults);
+      const heightData = coordinatesStore.interpolatedPoints.map(point => ({
+        x: point.x,
+        y: point.y
+      }));
+
+      chartInstance.value.data.datasets[0].data = hydraulicData;
+      chartInstance.value.data.datasets[1].data = heightData;
+
+      // Update axis limits
+      const maxX = Math.max(
+        ...hydraulicData.map(p => p.x),
+        ...heightData.map(p => p.x)
+      );
+      const minY = Math.min(
+        ...hydraulicData.map(p => p.y),
+        ...heightData.map(p => p.y)
+      ) * 0.9;
+      const maxY = Math.max(
+        ...hydraulicData.map(p => p.y),
+        ...heightData.map(p => p.y)
+      ) * 1.1;
+
+      chartInstance.value.options.scales.x.max = maxX;
+      chartInstance.value.options.scales.y.min = minY;
+      chartInstance.value.options.scales.y.max = maxY;
+
+      chartInstance.value.update('active');
     };
 
-    const heightLineData = generateInterpolatedPoints();
-
-    const range = ref([0, 800]);
     onMounted(() => {
       const ctx = chartCanvas.value.getContext("2d");
       chartInstance.value = new Chart(ctx, {
@@ -203,22 +149,25 @@ export default defineComponent({
               fill: false,
             },
             {
-                label: "Высотные отметки трубы",
-                data: heightLineData, // Статичные координаты
-                borderColor: "rgba(255, 99, 132, 1)",
-                backgroundColor: "rgba(255, 99, 132, 0.2)",
-                tension: 0.3,
-                fill: false,
-                cubicInterpolationMode: 'monotone',
-                borderWidth: 1.5,
-                pointRadius: 1, // Очень маленькие точки
-                pointHoverRadius: 3, // Немного увеличиваем при наведении
-                pointBackgroundColor: "rgba(255, 99, 132, 0.8)",
-                pointBorderColor: "rgba(255, 99, 132, 1)",
-                pointHoverBackgroundColor: "rgba(255, 99, 132, 1)",
-                pointHoverBorderColor: "rgba(255, 255, 255, 1)",
-                pointBorderWidth: 1,
-                spanGaps: true
+              label: "Высотные отметки трубы",
+              data: coordinatesStore.interpolatedPoints.map(point => ({
+                x: point.x,
+                y: point.y
+              })),
+              borderColor: "rgba(255, 99, 132, 1)",
+              backgroundColor: "rgba(255, 99, 132, 0.2)",
+              tension: 0.3,
+              fill: false,
+              cubicInterpolationMode: 'monotone',
+              borderWidth: 1.5,
+              pointRadius: 1,
+              pointHoverRadius: 3,
+              pointBackgroundColor: "rgba(255, 99, 132, 0.8)",
+              pointBorderColor: "rgba(255, 99, 132, 1)",
+              pointHoverBackgroundColor: "rgba(255, 99, 132, 1)",
+              pointHoverBorderColor: "rgba(255, 255, 255, 1)",
+              pointBorderWidth: 1,
+              spanGaps: true
             },
           ],
         },
@@ -395,7 +344,6 @@ export default defineComponent({
       chartCanvas,
       saveChartAsImage,
       resetZoom,
-      range,
     };
   },
 });

@@ -21,6 +21,50 @@
 
     <div class="content">
       <div class="scrollable-content">
+        <!-- Warnings Section -->
+        <div v-if="profileWarnings.length > 0" class="warnings-container">
+          <n-alert
+            v-for="(warning, index) in profileWarnings"
+            :key="index"
+            :type="warning.type"
+            :title="warning.type === 'error' ? 'Ошибка' : 'Предупреждение'"
+            closable
+            class="mb-4"
+          >
+            {{ warning.message }}
+          </n-alert>
+        </div>
+
+        <!-- Profile Analysis -->
+        <n-card v-if="profileAnalysis" class="mb-4" size="small">
+          <n-grid :cols="4" :x-gap="12">
+            <n-grid-item>
+              <div class="analysis-item">
+                <div class="label">Общая длина</div>
+                <div class="value">{{ profileAnalysis.totalDistance.toFixed(1) }} км</div>
+              </div>
+            </n-grid-item>
+            <n-grid-item>
+              <div class="analysis-item">
+                <div class="label">Макс. высота</div>
+                <div class="value">{{ profileAnalysis.maxHeight.toFixed(1) }} м</div>
+              </div>
+            </n-grid-item>
+            <n-grid-item>
+              <div class="analysis-item">
+                <div class="label">Мин. высота</div>
+                <div class="value">{{ profileAnalysis.minHeight.toFixed(1) }} м</div>
+              </div>
+            </n-grid-item>
+            <n-grid-item>
+              <div class="analysis-item">
+                <div class="label">Макс. уклон</div>
+                <div class="value">{{ (profileAnalysis.steepestGradient * 100).toFixed(1) }}%</div>
+              </div>
+            </n-grid-item>
+          </n-grid>
+        </n-card>
+
         <!-- Form Section -->
         <div class="form-container">
           <div class="form-header">
@@ -36,7 +80,7 @@
               placeholder="Участок (км)"
               class="input-field"
               :status="row.section === null ? 'warning' : undefined"
-              @update:value="validateForm"
+              @update:value="handleInputChange"
             />
             <n-input-number
               v-model:value="row.height"
@@ -45,7 +89,7 @@
               placeholder="Высота (м)"
               class="input-field"
               :status="row.height === null ? 'warning' : undefined"
-              @update:value="validateForm"
+              @update:value="handleInputChange"
             />
             <n-button
               circle
@@ -127,29 +171,43 @@
       <!-- Fixed Action Buttons -->
       <div class="fixed-actions">
         <div class="left-actions">
+          <n-button-group>
+            <n-button
+              secondary
+              @click="undo"
+              :disabled="!canUndo"
+              class="history-btn"
+            >
+              <template #icon>
+                <n-icon><ArrowUndoOutline /></n-icon>
+              </template>
+              Отменить
+            </n-button>
+            <n-button
+              secondary
+              @click="redo"
+              :disabled="!canRedo"
+              class="history-btn"
+            >
+              <template #icon>
+                <n-icon><ArrowRedoOutline /></n-icon>
+              </template>
+              Повторить
+            </n-button>
+          </n-button-group>
+
           <n-button
             type="primary"
             secondary
             @click="addRow"
-            :disabled="formData.length >= maxRows"
+            :loading="coordinatesStore.isLoading"
+            :disabled="!canAddNewPoint"
+            class="ml-2"
           >
             <template #icon>
               <n-icon><AddCircleOutline /></n-icon>
             </template>
-            Добавить строку
-          </n-button>
-          <n-button
-            type="default"
-            secondary
-            @click="toggleSort"
-            class="ml-2"
-          >
-            <template #icon>
-              <n-icon>
-                <component :is="sortAscending ? ArrowUpOutline : ArrowDownOutline" />
-              </n-icon>
-            </template>
-            Сортировка
+            Добавить точку
           </n-button>
         </div>
         <div class="right-actions">
@@ -158,6 +216,7 @@
             secondary
             class="mr-2"
             @click="saveToStorage"
+            :loading="isSaving"
           >
             <template #icon>
               <n-icon><SaveOutline /></n-icon>
@@ -166,7 +225,7 @@
           </n-button>
           <n-button
             type="primary"
-            :disabled="!isFormValid"
+            :disabled="!isFormValid || hasErrors"
             @click="submitForm"
           >
             <template #icon>
@@ -202,7 +261,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useMessage } from 'naive-ui'
 import { Line } from 'vue-chartjs'
 import { 
@@ -226,9 +285,13 @@ import {
   ArrowUpOutline,
   ArrowDownOutline,
   RefreshOutline,
-  DownloadOutline
+  DownloadOutline,
+  ArrowUndoOutline,
+  ArrowRedoOutline
 } from '@vicons/ionicons5'
-
+import { useCoordinatesStore } from '../../stores/coordinates'
+import { useCalculationsStore } from '../../stores/calculations'
+import { debounce } from 'lodash-es'
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -249,17 +312,18 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'save'])
 const message = useMessage()
+const coordinatesStore = useCoordinatesStore()
+const calculationsStore = useCalculationsStore()
 
 const show = computed({
   get: () => props.modelValue,
   set: (value) => emit('update:modelValue', value)
 })
 
-const formData = ref([
-  { section: 0, height: 100 },
-  { section: 5, height: 50 },
-  { section: 10, height: 300 }
-])
+const formData = computed({
+  get: () => coordinatesStore.coordinates,
+  set: (value) => coordinatesStore.updateCoordinates(value)
+})
 
 const maxRows = 10
 const dialogVisible = ref(false)
@@ -268,9 +332,7 @@ const sortAscending = ref(true)
 const isFormValid = ref(true)
 
 // Sorting logic
-const sortedData = computed(() => {
-  return [...formData.value].sort((a, b) => a.section - b.section)
-})
+const sortedData = computed(() => formData.value)
 
 // Chart data
 const chartRef = ref(null)
@@ -383,17 +445,30 @@ const chartOptions = {
 }
 
 // Form methods
-const toggleSort = () => {
-  sortAscending.value = !sortAscending.value
-}
-
 const validateForm = () => {
-  isFormValid.value = !formData.value.some(row => 
-    row.section === null || 
-    row.height === null || 
-    row.section === '' || 
-    row.height === ''
-  )
+  const totalPipelineLength = calculationsStore.pumpResults?.lengthPipeline?.reduce((sum, length) => sum + length, 0) || 0;
+  
+  const hasEmptyValues = formData.value.some(row => 
+    row.section === null || row.section === undefined || 
+    row.height === null || row.height === undefined
+  );
+
+  const exceedsTotalLength = formData.value.some(row => row.section > totalPipelineLength);
+  const sortedPoints = [...formData.value].sort((a, b) => a.section - b.section);
+  
+  // Check if there's a point at section 0
+  const hasZeroPoint = sortedPoints.some(point => point.section === 0);
+  if (!hasZeroPoint) {
+    message.error('Необходима точка в начале трубопровода (0 км)');
+    isFormValid.value = false;
+    return;
+  }
+  
+  if (exceedsTotalLength) {
+    message.error('Длина участка не может превышать общую длину трубопровода');
+  }
+
+  isFormValid.value = !hasEmptyValues && !exceedsTotalLength;
 }
 
 const getNextSectionValue = () => {
@@ -403,13 +478,80 @@ const getNextSectionValue = () => {
 }
 
 const addRow = () => {
-  if (formData.value.length < maxRows) {
-    const nextSection = getNextSectionValue()
+  const totalPipelineLength = calculationsStore.pumpResults?.lengthPipeline?.reduce((sum, length) => sum + length, 0) || 0;
+  const sortedPoints = [...formData.value].sort((a, b) => a.section - b.section);
+  
+  // Если нет точек, добавляем в начало (0 км)
+  if (sortedPoints.length === 0) {
     formData.value.push({
-      section: nextSection,
-      height: null
-    })
+      section: 0,
+      height: 150
+    });
+    validateForm();
+    return;
   }
+
+  // Проверяем, достигли ли мы конца трубопровода
+  const lastPoint = sortedPoints[sortedPoints.length - 1];
+  if (lastPoint.section >= totalPipelineLength) {
+    message.warning('Достигнута полная длина трубопровода');
+    return;
+  }
+
+  // Находим самый большой промежуток между точками
+  let maxGap = { start: 0, end: 0, size: 0 };
+  
+  // Проверяем промежуток в начале, если первая точка не в 0
+    if (sortedPoints[0].section > 0) {
+    maxGap = { start: 0, end: sortedPoints[0].section, size: sortedPoints[0].section };
+    }
+    
+  // Проверяем промежутки между точками
+    for (let i = 0; i < sortedPoints.length - 1; i++) {
+      const gap = sortedPoints[i + 1].section - sortedPoints[i].section;
+    if (gap > maxGap.size) {
+      maxGap = {
+          start: sortedPoints[i].section,
+        end: sortedPoints[i + 1].section,
+        size: gap
+      };
+    }
+  }
+
+  // Проверяем промежуток в конце
+  const endGap = totalPipelineLength - lastPoint.section;
+  if (endGap > maxGap.size) {
+    maxGap = {
+      start: lastPoint.section,
+      end: totalPipelineLength,
+      size: endGap
+    };
+  }
+
+  // Вычисляем позицию новой точки
+  let newSection;
+  if (maxGap.start === 0) {
+    newSection = 0;
+  } else if (maxGap.end === totalPipelineLength) {
+    newSection = Math.min(maxGap.start + 5, totalPipelineLength);
+  } else {
+    newSection = maxGap.start + (maxGap.end - maxGap.start) / 2;
+  }
+
+  // Вычисляем высоту на основе ближайших точек
+  let newHeight = 150;
+      const nearestPoint = sortedPoints.reduce((nearest, point) => {
+        const distance = Math.abs(point.section - newSection);
+        return distance < Math.abs(nearest.section - newSection) ? point : nearest;
+      }, sortedPoints[0]);
+  newHeight = nearestPoint.height;
+
+  // Добавляем новую точку
+    formData.value.push({
+      section: Math.round(newSection * 100) / 100,
+    height: Math.round(newHeight)
+    });
+    validateForm();
 }
 
 const confirmRemoveRow = (index) => {
@@ -419,23 +561,61 @@ const confirmRemoveRow = (index) => {
 
 const handleConfirmDelete = () => {
   if (indexToDelete.value !== null) {
-    formData.value.splice(indexToDelete.value, 1)
-    message.success('Строка удалена')
-    dialogVisible.value = false
-    indexToDelete.value = null
-    validateForm()
+    const pointToDelete = formData.value[indexToDelete.value];
+    if (pointToDelete.section === 0) {
+      message.warning('Нельзя удалить начальную точку (0 км)');
+      dialogVisible.value = false;
+      indexToDelete.value = null;
+      return;
+    }
+    
+    formData.value.splice(indexToDelete.value, 1);
+    message.success('Строка удалена');
+    dialogVisible.value = false;
+    indexToDelete.value = null;
+    validateForm();
   }
 }
 
 // Storage methods
-const saveToStorage = () => {
+const isSaving = ref(false);
+
+const saveToStorage = async () => {
   try {
-    localStorage.setItem('heightData', JSON.stringify(formData.value))
-    message.success('Данные успешно сохранены')
+    isSaving.value = true;
+    
+    // Sort before saving, preserve zero values
+    const sortedFormData = [...formData.value]
+      .filter(point => {
+        return (point.section !== null && point.section !== undefined && 
+                point.height !== null && point.height !== undefined);
+      })
+      .sort((a, b) => a.section - b.section);
+
+    // Check if there's a point at section 0
+    if (!sortedFormData.some(point => point.section === 0)) {
+      message.error('Необходима точка в начале трубопровода (0 км)');
+      return;
+    }
+
+    // Check if last point reaches total length
+    const totalPipelineLength = calculationsStore.pumpResults?.lengthPipeline?.reduce((sum, length) => sum + length, 0) || 0;
+    const lastPoint = sortedFormData[sortedFormData.length - 1];
+    
+    if (!lastPoint || lastPoint.section < totalPipelineLength) {
+      message.error(`Последняя точка (${lastPoint?.section || 0}км) не достигает конца трубопровода (${totalPipelineLength}км)`);
+      return;
+    }
+
+    formData.value = sortedFormData;
+    localStorage.setItem('heightData', JSON.stringify(sortedFormData));
+    message.success('Данные успешно сохранены');
   } catch (error) {
-    message.error('Ошибка при сохранении данных')
+    message.error('Ошибка при сохранении данных: ' + error.message);
+  } finally {
+    isSaving.value = false;
   }
-}
+};
 
 const loadFromStorage = () => {
   try {
@@ -452,13 +632,16 @@ const loadFromStorage = () => {
 
 const submitForm = () => {
   if (!isFormValid.value) {
-    message.error('Пожалуйста, заполните все поля')
-    return
+    message.error('Пожалуйста, проверьте введенные данные');
+    return;
   }
+
+  // Sort before submitting
+  formData.value = [...formData.value].sort((a, b) => a.section - b.section);
   
-  emit('save', formData.value)
-  show.value = false
-  message.success('Форма успешно отправлена')
+  coordinatesStore.interpolatePoints();
+  show.value = false;
+  message.success('Форма успешно отправлена');
 }
 
 // New functions
@@ -477,9 +660,117 @@ const downloadChart = () => {
   }
 }
 
+// Initialize default coordinates when component is mounted
 onMounted(() => {
-  loadFromStorage()
+  if (calculationsStore.pumpResults && calculationsStore.pumpResults.lengthPipeline) {
+    const totalLength = calculationsStore.pumpResults.lengthPipeline.reduce((sum, length) => sum + length, 0)
+    if (formData.value.length === 0) {
+      coordinatesStore.initializeDefaultCoordinates(totalLength)
+    }
+  }
 })
+
+// Watch for changes in pump results to update coordinates if needed
+watch(
+  () => calculationsStore.pumpResults,
+  (newResults) => {
+    if (newResults && newResults.lengthPipeline) {
+      const totalLength = newResults.lengthPipeline.reduce((sum, length) => sum + length, 0)
+      if (formData.value.length === 0) {
+        coordinatesStore.initializeDefaultCoordinates(totalLength)
+      }
+    }
+  }
+)
+
+// Computed properties for new features
+const profileAnalysis = computed(() => {
+  const points = [...formData.value].sort((a, b) => a.section - b.section);
+  if (points.length < 2) return null;
+
+  const totalPipelineLength = calculationsStore.pumpResults?.lengthPipeline?.reduce((sum, length) => sum + length, 0) || 0;
+
+  const analysis = {
+    totalDistance: totalPipelineLength,
+    maxHeight: Math.max(...points.map(p => p.height)),
+    minHeight: Math.min(...points.map(p => p.height)),
+    totalElevationGain: 0,
+    steepestGradient: 0,
+    remainingLength: totalPipelineLength - points[points.length - 1].section,
+    warnings: []
+  };
+
+  for (let i = 1; i < points.length; i++) {
+    const elevationDiff = Math.abs(points[i].height - points[i-1].height);
+    const distance = Math.abs(points[i].section - points[i-1].section);
+    
+    if (points[i].height > points[i-1].height) {
+      analysis.totalElevationGain += elevationDiff;
+    }
+    
+    if (distance > 0) {
+      const gradient = elevationDiff / (distance * 1000); // Convert km to m for correct gradient
+      analysis.steepestGradient = Math.max(analysis.steepestGradient, gradient);
+    }
+  }
+
+  // Warnings
+  if (analysis.steepestGradient > Math.tan(Math.PI * 45 / 180)) {
+    analysis.warnings.push({
+      type: 'error',
+      message: `Обнаружен слишком крутой уклон (>${(analysis.steepestGradient * 100).toFixed(1)}%)`
+    });
+  }
+
+  if (analysis.maxHeight - analysis.minHeight > 200) {
+    analysis.warnings.push({
+      type: 'warning',
+      message: `Большой перепад высот (${(analysis.maxHeight - analysis.minHeight).toFixed(1)}м)`
+    });
+  }
+
+  if (points[points.length - 1].section < totalPipelineLength) {
+    analysis.warnings.push({
+      type: 'warning',
+      message: `Не заполнен участок ${points[points.length - 1].section}км - ${totalPipelineLength}км`
+    });
+  }
+
+  return analysis;
+});
+
+const profileWarnings = computed(() => profileAnalysis.value?.warnings || [])
+const hasErrors = computed(() => profileWarnings.value.some(w => w.type === 'error'))
+const canUndo = computed(() => coordinatesStore.canUndo)
+const canRedo = computed(() => coordinatesStore.canRedo)
+
+// Debounced input handler
+const handleInputChange = debounce(() => {
+  validateForm()
+}, 300)
+
+// History methods
+const undo = () => {
+  if (coordinatesStore.undo()) {
+    message.info('Действие отменено')
+  }
+}
+
+const redo = () => {
+  if (coordinatesStore.redo()) {
+    message.info('Действие повторено')
+  }
+}
+
+// Computed property for checking if new point can be added
+const canAddNewPoint = computed(() => {
+  const totalPipelineLength = calculationsStore.pumpResults?.lengthPipeline?.reduce((sum, length) => sum + length, 0) || 0;
+  const lastPoint = sortedData.value[sortedData.value.length - 1];
+  
+  return !coordinatesStore.isLoading && 
+         formData.value.length < maxRows && 
+         (!lastPoint || lastPoint.section < totalPipelineLength);
+});
 </script>
 
 <style scoped>
@@ -655,5 +946,34 @@ onMounted(() => {
 
 .mt-4 {
   margin-top: 16px;
+}
+
+.warnings-container {
+  margin-bottom: 16px;
+}
+
+.analysis-item {
+  text-align: center;
+  padding: 8px;
+}
+
+.analysis-item .label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.analysis-item .value {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+.history-btn {
+  min-width: 100px;
+}
+
+.mb-4 {
+  margin-bottom: 16px;
 }
 </style>
