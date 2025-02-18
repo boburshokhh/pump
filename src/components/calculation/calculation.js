@@ -42,13 +42,14 @@ export function calculatePumpEfficiency() {
     const dh_pns = 100;               // Подъём насоса [м]
     const h_inlet_first_pump = 60;    // Напор на входе первого насоса [м]
 
-    //
     // Массивы для промежуточных расчетов
     const lam = [];                   // Коэффициент гидравлического сопротивления
     const h_in = [];                  // Напор на входе станций [м]
     const h_out = [];                 // Напор на выходе станций [м]
     const head_loss = [];             // Потери напора [м]
     const Re = [];                    // Число Рейнольдса
+    const afp_conc = [];             // Концентрация ПТП [ppm]
+    const afp_efficiency = [];        // Эффективность ПТП [%]
 
     pumps_stations.forEach((station) => {
         consumptionStation.push(station.flow);
@@ -58,6 +59,10 @@ export function calculatePumpEfficiency() {
         roughnessPipe.push(station.pipeParameters.roughness / 1000);
         densityLiquid.push(station.liquidParameters.density);
         viscosityLiquid.push(station.liquidParameters.viscosity);
+        afp_conc.push(station.afp_consumption);
+        // Новая формула эффективности ПТП с учетом нелинейности и насыщения
+        const efficiency = Math.min(45, station.afp_consumption * Math.sqrt(station.flow/1000) * 5);
+        afp_efficiency.push(efficiency);
     });
 
     // Определение насосов для каждой станции
@@ -92,7 +97,9 @@ export function calculatePumpEfficiency() {
             const numOfPumps = pumps_stations[i].pumps[j].numOfPumps;
             
             let Q_single_pump;
+            console.log("pump_stations[i].connectionType:",pumps_stations[i].connectionType)
             if (pumps_stations[i].connectionType === 'serial') {
+                
                 Q_single_pump = consumptionStation[i];
             } else {
                 Q_single_pump = consumptionStation[i] / numOfPumps;
@@ -125,7 +132,7 @@ export function calculatePumpEfficiency() {
         speed.push(4 * consumptionStation[i] / (3600 * Math.PI * Math.pow(d_internal[i], 2)));
     }
 
-    // Расчет гидравлических параметров
+    // Расчет гидравлических параметров с учетом ПТП
     for (let i = 0; i < pumps_stations.length; i++) {
         // Расчет числа Рейнольдса
         Re[i] = (speed[i] * d_internal[i]) / (viscosityLiquid[i] * 1e-6);
@@ -142,7 +149,12 @@ export function calculatePumpEfficiency() {
             lam[i] = 0.11 * Math.pow(68 / Re[i] + roughnessPipe[i] / d_internal[i], 0.25);
         }
 
-        // Расчет потерь напора
+        // Применение эффекта ПТП к коэффициенту гидравлического сопротивления
+        if (afp_conc[i] > 0) {
+            lam[i] = lam[i] * (1 - afp_efficiency[i] / 100);
+        }
+
+        // Расчет потерь напора с учетом ПТП
         head_loss[i] = lam[i] * ((lengthPipeline[i] * 1000) / d_internal[i]) * (Math.pow(speed[i], 2) / (2 * g));
     }
 
@@ -217,7 +229,9 @@ export function calculatePumpEfficiency() {
         speed,
         Re,
         dh_pump,
-        pumpPerformanceResults
+        pumpPerformanceResults,
+        afp_conc,
+        afp_efficiency
     };
     console.log("dataObject:",dataObject)
     return dataObject;

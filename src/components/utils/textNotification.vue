@@ -43,7 +43,16 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
+/* Глобальные стили для контейнера уведомлений Vue Toastification */
+:global(.Vue-Toastification__container) {
+  z-index: 10000 !important;
+}
+
+:global(.Vue-Toastification__toast) {
+  z-index: 10001 !important;
+}
+
 .notification-container {
   border-radius: 4px;
   display: flex;

@@ -150,7 +150,23 @@
               </td>
               <td>{{ item.flow }}</td>
               <td>{{ item.length }}</td>
-              <td>{{ item.afp_consumption }}</td>
+              <td>
+                <div class="d-flex align-center">
+                  <span 
+                    @click="openAFPDialog(item)"
+                    class="afp-value"
+                  >
+                    {{ item.afp_consumption }}
+                  </span>
+                </div>
+                <AFPChartDialog
+                  :show="showAFPDialog"
+                  @update:show="showAFPDialog = $event"
+                  :station-name="selectedStation?.station"
+                  :current-value="selectedStation?.afp_consumption"
+                  :flow="selectedStation?.flow"
+                />
+              </td>
               <td class="pumps-column">
                 <div
                   v-for="pump in item.pumps"
@@ -287,7 +303,8 @@ import * as XLSX from "xlsx";
 import { TrashOutline } from "@vicons/ionicons5";
 import { PencilSharp } from "@vicons/ionicons5";
 import { useMessage } from "naive-ui";
-// import { useCalculationsStore } from "../../stores/calculations";
+import AFPChartDialog from '../modals/AFPChartDialog.vue';
+import { useCalculationsStore } from "../../stores/calculations";
 
 export default {
   components: {
@@ -298,15 +315,12 @@ export default {
     pumpInfo,
     TrashOutline,
     PencilSharp,
+    AFPChartDialog,
   },
   setup() {
     const stationStore = useIndexStore(); // Подключаем Pinia Store
     const message = useMessage(); // Подключаем уведомления
-    // const calculationsStore = useCalculationsStore();
 
-    // calculationsStore.updateCalculations();
-    // const pumpStationsCalculations = calculationsStore.getPumpResults.pumpPerformanceResults;
-    // console.log(pumpStationsCalculations);
     // Метод для подтверждения удаления
     const handlePositiveClick = (index) => {
       stationStore.deleteStation(index); // Удаляем станцию
@@ -327,7 +341,10 @@ export default {
   },
   computed: {
     stations() {
-      return this.stationStore.getStations;
+      return this.stationStore.getStations.map(station => ({
+        ...station,
+        showAFPDialog: false
+      }));
     },
     getPumpResults() {
       console.log(
@@ -363,6 +380,7 @@ export default {
   data() {
     return {
       stationStore: useIndexStore(),
+      calculationsStore: useCalculationsStore(),
       showNotification: false,
       notificationText: "",
       notificationColor: "red",
@@ -394,9 +412,9 @@ export default {
           icon: "mdi-ruler",
         },
         {
-          text: "Расход АФП",
+          text: "АФП концентрация",
           width: "7%",
-          tooltip: "Расход АФП в км",
+          tooltip: "Концентрация АФП в ppm",
           icon: "mdi-chart-line",
         },
         { text: "Насосы", width: "15%", icon: "mdi-pump-off" },
@@ -434,6 +452,8 @@ export default {
       selectedRow: null,
       isSearching: false,
       searchTimeout: null,
+      showAFPDialog: false,
+      selectedStation: null,
     };
   },
   watch: {
@@ -563,6 +583,23 @@ export default {
     },
     handlePageChange(newPage) {
       this.page = newPage;
+    },
+    updateAFPConcentration(newValue) {
+      if (!this.selectedStation) return;
+      
+      const index = this.stationStore.stations.findIndex(s => s.station === this.selectedStation.station);
+      if (index !== -1) {
+        this.stationStore.updateStation(index, {
+          ...this.stationStore.stations[index],
+          afp_consumption: Number(newValue)
+        });
+        
+        this.calculationsStore.updateCalculations();
+      }
+    },
+    openAFPDialog(item) {
+      this.selectedStation = item;
+      this.showAFPDialog = true;
     },
   },
 };
@@ -1161,5 +1198,16 @@ export default {
 .v-table tbody tr:hover td.station-column[data-v-b59edd4a],
 .v-table tbody tr:hover td.actions-column[data-v-b59edd4a] {
   background-color: rgb(255, 255, 255) !important;
+}
+
+.afp-value {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.afp-value:hover {
+  background-color: rgba(var(--v-theme-primary), 0.1);
 }
 </style>

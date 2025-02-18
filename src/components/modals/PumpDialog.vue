@@ -5,13 +5,15 @@ import { useCalculationsStore } from "../../stores/calculations";
 import ResultCalc from "./ResultCalc.vue";
 import Notification from "../utils/Notification.vue";
 import TableElevationMarks from "../forms/coordinatsInterpolation.vue"
+import CoordinatsInterpolation from '../forms/coordinatsInterpolation.vue'
 
 export default defineComponent({
   components: {
     formAddPump,
     ResultCalc,
     Notification,
-    TableElevationMarks
+    TableElevationMarks,
+    CoordinatsInterpolation
   },
   props: {
     show: {
@@ -25,8 +27,8 @@ export default defineComponent({
     const drawerWidth = ref("700px");
     const isMobile = ref(false);
     const calculationsStore = useCalculationsStore();
-    // console.log("calculationsStore:",calculationsStore);
     const showResults = ref(false);
+    const showCoordinatesModal = ref(false);
 
     const updateDrawerWidth = () => {
       const screenWidth = window.innerWidth;
@@ -74,6 +76,11 @@ export default defineComponent({
       showResults.value = true;
     };
 
+    const handleCoordinatesSave = (data) => {
+      console.log('Сохраненные координаты:', data)
+      showCoordinatesModal.value = false
+    }
+
     return {
       localShow,
       placement: "right",
@@ -83,16 +90,19 @@ export default defineComponent({
       closeDrawer,
       showResults,
       handleCalculate,
+      showCoordinatesModal,
+      handleCoordinatesSave
     };
   },
 });
 </script>
 
 <template>
-  <n-flex :margin="16" justify="space-between">
-    <div class="button-group">
+  <div class="d-flex flex-column flex-sm-row justify-space-between align-center pa-4">
+    <!-- Левая группа кнопок -->
+    <div class="button-group left-buttons">
       <v-btn
-        class="ma-3"
+        class="ma-2"
         variant="tonal"
         color="success"
         :ripple="true"
@@ -105,24 +115,48 @@ export default defineComponent({
         </v-tooltip>
       </v-btn>
 
-      <ResultCalc v-if="showResults" />
+      <ResultCalc v-if="showResults" class="ma-2" />
     </div>
 
-    <v-btn
-      class="ma-3"
-      variant="tonal"
-      color="primary"
-      :ripple="true"
-      @click="openDrawer"
-    >
-      <v-icon icon="mdi-plus" start size="25"></v-icon>
-      Добавить
-      <v-tooltip activator="parent" location="start"> Добавить НПС </v-tooltip>
-    </v-btn>
+    <!-- Правая группа кнопок -->
+    <div class="button-group right-buttons">
+      <v-btn
+        class="ma-2"
+        variant="tonal"
+        color="info"
+        :ripple="true"
+        @click="showCoordinatesModal = true"
+      >
+        <v-icon icon="mdi-map-marker-path" start size="25"></v-icon>
+        Координаты
+        <v-tooltip activator="parent" location="start">
+          Настройка координат и высот
+        </v-tooltip>
+      </v-btn>
 
+      <v-btn
+        class="ma-2"
+        variant="tonal"
+        color="primary"
+        :ripple="true"
+        @click="openDrawer"
+      >
+        <v-icon icon="mdi-plus" start size="25"></v-icon>
+        Добавить
+        <v-tooltip activator="parent" location="start">
+          Добавить НПС
+        </v-tooltip>
+      </v-btn>
+    </div>
+  </div>
 
-  </n-flex>
-<TableElevationMarks></TableElevationMarks>
+  <!-- Coordinates Modal -->
+  <CoordinatsInterpolation 
+    :model-value="showCoordinatesModal"
+    @update:model-value="showCoordinatesModal = $event"
+    @save="handleCoordinatesSave"
+  />
+
   <n-drawer
     v-model:show="localShow"
     :width="drawerWidth"
@@ -199,6 +233,39 @@ export default defineComponent({
 .button-group {
   display: flex;
   align-items: center;
+  gap: 8px;
+}
+
+.left-buttons {
+  flex-wrap: nowrap;
+}
+
+.right-buttons {
+  flex-wrap: nowrap;
+}
+
+@media (max-width: 600px) {
+  .d-flex {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .button-group {
+    width: 100%;
+  }
+
+  .left-buttons, .right-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .button-group .v-btn {
+    width: 100%;
+  }
+
+  .ma-2 {
+    margin: 4px 0 !important;
+  }
 }
 
 :deep(.n-drawer-content) {

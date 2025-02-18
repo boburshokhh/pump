@@ -9,23 +9,23 @@ export const useIndexStore = defineStore("stationStore", {
         connectionType: 'serial',
         pumps: [
           { id: 1, name: "HM 1250-260", numOfPumps: 2, fact_rpm: 2900 },
-          { id: 2, name: "HM 3600-230", numOfPumps: 2, fact_rpm: 2850 }, // Используем фактическую скорость вращения
+          { id: 2, name: "HM 3600-230", numOfPumps: 2, fact_rpm: 2850 },
         ],
-        inputPressure: "1000", // Подставьте значение из расчета h_in[0]
-        outputPressure: "1100", // Подставьте значение из расчета h_out[0]
+        inputPressure: "1000",
+        outputPressure: "1100",
         length: 100,
-        power: "50", // Мощность можно рассчитать, если нужно
+        power: "50",
         afpType: "Тип 1",
-        afp_consumption: 10,
+        afp_consumption: 2.5,
         liquidParameters: {
           density: 850,
           viscosity: 10,
         },
         pipeParameters: {
-          diameter: 720, // Умножаем на 1000, чтобы перевести в мм
-          wallThickness: 10, // Умножаем на 1000, чтобы перевести в мм
-          roughness: 0.1, // Умножаем на 1000, чтобы перевести в мм
-          pressure: 10, // Давление
+          diameter: 720,
+          wallThickness: 10,
+          roughness: 0.1,
+          pressure: 10,
         },
       },
       {
@@ -36,12 +36,12 @@ export const useIndexStore = defineStore("stationStore", {
           { id: 2, name: "HM 3600-230", numOfPumps: 1, fact_rpm: 2850 },
           { id: 6, name: "HM 3600-230 (подача 2500 м³/ч)", numOfPumps: 1, fact_rpm: 2850 },
         ],
-        inputPressure: "1100", // Подставьте значение из h_in[1]
-        outputPressure: "1200", // Подставьте значение из h_out[1]
+        inputPressure: "1100",
+        outputPressure: "1200",
         length: 90,
         power: "70",
         afpType: "Тип 2",
-        afp_consumption: 15,
+        afp_consumption: 4.2,
         liquidParameters: {
           density: 850,
           viscosity: 10,
@@ -60,12 +60,12 @@ export const useIndexStore = defineStore("stationStore", {
         pumps: [
           { id: 3, name: "HM 5000-210", numOfPumps: 2, fact_rpm: 2980 },
         ],
-        inputPressure: "1200", // Подставьте значение из h_in[2]
-        outputPressure: "1300", // Подставьте значение из h_out[2]
+        inputPressure: "1200",
+        outputPressure: "1300",
         length: 110,
         power: "90",
         afpType: "Тип 3",
-        afp_consumption: 3,
+        afp_consumption: 3.8,
         liquidParameters: {
           density: 850,
           viscosity: 10,
@@ -84,12 +84,12 @@ export const useIndexStore = defineStore("stationStore", {
         pumps: [
           { id: 3, name: "HM 2500-230 (подача 1800 м³/ч)", numOfPumps: 2, fact_rpm: 2800 },
         ],
-        inputPressure: "1300", // Подставьте значение из h_in[3]
-        outputPressure: "1400", // Подставьте значение из h_out[3]
+        inputPressure: "1300",
+        outputPressure: "1400",
         length: 110,
         power: "100",
         afpType: "Тип 4",
-        afp_consumption: 8,
+        afp_consumption: 3.0,
         liquidParameters: {
           density: 850,
           viscosity: 10,
@@ -108,12 +108,12 @@ export const useIndexStore = defineStore("stationStore", {
         pumps: [
           { id: 3, name: "HM 2500-230 (подача 1800 м³/ч)", numOfPumps: 2, fact_rpm: 2900 },
         ],
-        inputPressure: "1300", // Подставьте значение из h_in[3]
-        outputPressure: "1400", // Подставьте значение из h_out[3]
+        inputPressure: "1300",
+        outputPressure: "1400",
         length: 110,
         power: "100",
         afpType: "Тип 4",
-        afp_consumption: 8,
+        afp_consumption: 3.5,
         liquidParameters: {
           density: 850,
           viscosity: 10,

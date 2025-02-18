@@ -37,12 +37,18 @@
         <v-number-input
           v-model="data.afp_consumption"
           :min="0"
+          :max="30"
+          :step="0.1"
           :reverse="false"
           control-variant="split"
-          label="Расход АФП, ppm"
+          label="АФП концентрация, ppm"
           :hideInput="false"
           inset
           :error-messages="errors.afp_consumption"
+          :rules="[
+            v => v >= 0 || 'Минимальное значение 0',
+            v => v <= 30 || 'Максимальное значение 30'
+          ]"
         ></v-number-input>
       </v-col>
     </v-row>
@@ -64,7 +70,7 @@ export default {
         station: '',
         flow: null,
         length: null,
-        afp_consumption: null
+        afp_consumption: 1
       })
     },
     editMode: {

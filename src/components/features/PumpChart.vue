@@ -52,8 +52,26 @@ export default defineComponent({
       () => calculationsStore.calculateClicked,
       (newValue) => {
         if (newValue) {
-          // console.log("PumpChart: Calculate button was clicked!");
-          // После обработки сбрасываем флаг
+          // Обновляем график при нажатии кнопки
+          if (chartInstance.value && calculationsStore.pumpResults) {
+            const newData = processData(calculationsStore.pumpResults);
+            const totalLength = calculationsStore.pumpResults.lengthPipeline.reduce((sum, length) => sum + length, 0);
+
+            // Обновляем данные гидравлического уклона
+            chartInstance.value.data.datasets[0].data = newData;
+
+            // Обновляем высотные отметки
+            const newHeightLineData = generateInterpolatedPoints();
+            chartInstance.value.data.datasets[1].data = newHeightLineData;
+
+            // Обновляем пределы осей
+            chartInstance.value.options.scales.x.min = 0;
+            chartInstance.value.options.scales.x.max = totalLength;
+            chartInstance.value.options.scales.y.min = Math.min(...calculationsStore.pumpResults.h_in) * 0.9;
+            chartInstance.value.options.scales.y.max = Math.max(...calculationsStore.pumpResults.h_out) * 1.1;
+
+            chartInstance.value.update('active');
+          }
           calculationsStore.setCalculateClicked(false);
         }
       }
@@ -61,24 +79,26 @@ export default defineComponent({
 
     // Отслеживаем изменения в store
     watch(
-      () => 
-      calculationsStore.pumpResults,
+      () => calculationsStore.pumpResults,
       (newResults) => {
-        // console.log("Store results changed:", newResults);
         if (chartInstance.value && newResults) {
           const newData = processData(newResults);
+          const totalLength = newResults.lengthPipeline.reduce((sum, length) => sum + length, 0);
 
-          // Плавное обновление данных
+          // Обновляем данные гидравлического уклона
           chartInstance.value.data.datasets[0].data = newData;
 
-          // Плавное обновление пределов оси Y
-          chartInstance.value.options.scales.y.min =
-            Math.min(...newResults.h_in) * 0.9;
-          chartInstance.value.options.scales.y.max =
-            Math.max(...newResults.h_out) * 1.1;
+          // Обновляем высотные отметки
+          const newHeightLineData = generateInterpolatedPoints();
+          chartInstance.value.data.datasets[1].data = newHeightLineData;
 
-          // Применяем анимацию при обновлении
-          chartInstance.value.update("active");
+          // Обновляем пределы осей
+          chartInstance.value.options.scales.x.min = 0;
+          chartInstance.value.options.scales.x.max = totalLength;
+          chartInstance.value.options.scales.y.min = Math.min(...newResults.h_in) * 0.9;
+          chartInstance.value.options.scales.y.max = Math.max(...newResults.h_out) * 1.1;
+
+          chartInstance.value.update('active');
         }
       },
       { deep: true }

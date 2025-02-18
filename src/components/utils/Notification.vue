@@ -24,6 +24,10 @@ export default defineComponent({
       closeButton: "button",
       icon: true,
       rtl: false,
+      position: "top-right",
+      containerClassName: "toast-container",
+      toastClassName: "toast",
+      zIndex: 10000,
       ...options, 
     });
 
