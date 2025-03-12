@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { useCalculationsStore } from './calculations';
+import { useIndexStore } from './index'; // Add import for index store
 
 export const useCoordinatesStore = defineStore('coordinates', () => {
   const coordinates = ref([]);
@@ -188,14 +189,33 @@ export const useCoordinatesStore = defineStore('coordinates', () => {
     try {
       isLoading.value = true;
       pipelineLength.value = totalPipelineLength;
-      const step = totalPipelineLength / (defaultPointsCount - 1);
       
-      coordinates.value = Array.from({ length: defaultPointsCount }, (_, i) => {
-        const section = Math.round(i * step);
+      const indexStore = useIndexStore();
+      const stations = indexStore.stations;
+      const stationCount = stations.length;
+      
+      // Create one more point than the number of stations (for the endpoint)
+      const pointsToCreate = stationCount + 1;
+      
+      // Calculate cumulative distances for each station
+      let cumulativeDistances = [0]; // Start with 0
+      let currentDistance = 0;
+      
+      for (let i = 0; i < stations.length; i++) {
+        currentDistance += parseFloat(stations[i].length) || 0;
+        cumulativeDistances.push(currentDistance);
+      }
+      
+      // Create coordinates for each point
+      coordinates.value = Array.from({ length: pointsToCreate }, (_, i) => {
+        // Use the pre-calculated distances
+        const section = cumulativeDistances[i];
+        
+        // Height calculation with some variation
         const baseHeight = 150;
-        const variation = Math.sin(i / (defaultPointsCount - 1) * Math.PI) * 20;
+        const variation = Math.sin(i / (pointsToCreate - 1) * Math.PI) * 20;
         const randomNoise = (Math.random() - 0.5) * 10;
-        const trend = (i / (defaultPointsCount - 1)) * 15;
+        const trend = (i / (pointsToCreate - 1)) * 15;
         
         const height = baseHeight + variation + randomNoise + trend;
         

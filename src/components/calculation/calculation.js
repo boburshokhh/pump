@@ -1,5 +1,6 @@
 import { useIndexStore } from "../../stores/index";
 import { useOptionsStore } from "../../stores/options";
+import { useCoordinatesStore } from "../../stores/coordinates";
 /**
  * Функция для форматированного вывода массива значений
  * @param {string} title - Название параметра
@@ -19,10 +20,7 @@ export function calculatePumpEfficiency() {
     // Получение данных из хранилищ
     const storePumpsStations = useIndexStore();
     const pumps = useOptionsStore();
-    const getPumpsList = {
-        ...pumps.selectOptions.centrifugal_pumps,
-        ...pumps.selectOptions.powerful_pumps
-    };
+    const coordinatesStore = useCoordinatesStore();
     const pumps_stations = storePumpsStations.getStations;
 
     // Инициализация массивов для хранения параметров
@@ -50,6 +48,33 @@ export function calculatePumpEfficiency() {
     const Re = [];                    // Число Рейнольдса
     const afp_conc = [];             // Концентрация ПТП [ppm]
     const afp_efficiency = [];        // Эффективность ПТП [%]
+    const z = [];                     // Высотные отметки станций [м]
+
+    // Получаем высотные отметки для каждой станции из coordinatesStore
+    pumps_stations.forEach((station, index) => {
+        // Вычисляем расстояние до текущей станции
+        let currentDistance = 0;
+        if (index > 0) {
+            currentDistance = pumps_stations.slice(0, index).reduce((sum, s) => sum + s.length, 0);
+        }
+        
+        // Находим высотную отметку для текущей станции из coordinates
+        const sortedCoordinates = [...coordinatesStore.coordinates].sort((a, b) => a.section - b.section);
+        
+        // Находим ближайшую точку
+        let nearestPoint = sortedCoordinates[0];
+        let minDistance = Math.abs(nearestPoint.section - currentDistance);
+        
+        for (const point of sortedCoordinates) {
+            const distance = Math.abs(point.section - currentDistance);
+            if (distance < minDistance) {
+                minDistance = distance;
+                nearestPoint = point;
+            }
+        }
+        
+        z.push(nearestPoint ? nearestPoint.height : 0);
+    });
 
     pumps_stations.forEach((station) => {
         consumptionStation.push(station.flow);
@@ -85,7 +110,7 @@ export function calculatePumpEfficiency() {
     );
 
     // Расчёт напора для каждой станции
-    h_in[0] = h_inlet_first_pump + dh_pns;
+    h_in[0] = h_inlet_first_pump + dh_pns + z[0];
     for (let i = 0; i < selectedPumps.length; i++) {
         let stationFlow = 0;
         
@@ -163,13 +188,13 @@ export function calculatePumpEfficiency() {
         if (i == 0) {
             h_out[i] = h_in[0] + dh_pump[i]
         } else {
-            h_in[i] = h_out[i - 1] - head_loss[i - 1] 
+            h_in[i] = h_out[i - 1] - head_loss[i - 1] + z[i-1] - z[i];
             h_out[i] = h_in[i] + dh_pump[i]
         }
     }
 
     const lastIndex = pumps_stations.length - 1;
-    h_in[lastIndex + 1] = h_out[lastIndex] - head_loss[lastIndex];
+    h_in[lastIndex + 1] = h_out[lastIndex] - head_loss[lastIndex] + z[lastIndex] - z[lastIndex];
 
     const N_potreb = []
     // Интеграция расчета эффективности насосов

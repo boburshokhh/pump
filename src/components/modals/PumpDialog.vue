@@ -2,6 +2,8 @@
 import { defineComponent, ref, watch, onMounted, onBeforeUnmount } from "vue";
 import formAddPump from "../base/BaseForm.vue";
 import { useCalculationsStore } from "../../stores/calculations";
+import { useCoordinatesStore } from "../../stores/coordinates"; // Add this import
+import { useIndexStore } from "../../stores/index"; // Add this import
 import ResultCalc from "./ResultCalc.vue";
 import Notification from "../utils/Notification.vue";
 import TableElevationMarks from "../forms/coordinatsInterpolation.vue"
@@ -27,6 +29,8 @@ export default defineComponent({
     const drawerWidth = ref("700px");
     const isMobile = ref(false);
     const calculationsStore = useCalculationsStore();
+    const coordinatesStore = useCoordinatesStore(); // Add this
+    const indexStore = useIndexStore(); // Add this
     const showResults = ref(false);
     const showCoordinatesModal = ref(false);
 
@@ -42,9 +46,20 @@ export default defineComponent({
       }
     };
 
+    // Initialize coordinates on component mount
     onMounted(() => {
       updateDrawerWidth();
       window.addEventListener("resize", updateDrawerWidth);
+      
+      // Calculate total pipeline length from stations
+      const stations = indexStore.stations;
+      const totalPipelineLength = stations.reduce((sum, station) => 
+        sum + (parseFloat(station.length) || 0), 0);
+      
+      // Initialize coordinates with the total pipeline length
+      if (totalPipelineLength > 0) {
+        coordinatesStore.initializeDefaultCoordinates(totalPipelineLength);
+      }
     });
 
     onBeforeUnmount(() => {
