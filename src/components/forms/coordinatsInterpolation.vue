@@ -610,6 +610,10 @@ const saveToStorage = async () => {
     formData.value = sortedFormData;
     localStorage.setItem('heightData', JSON.stringify(sortedFormData));
     message.success('Данные успешно сохранены');
+
+    // Вызываем перерасчет после сохранения координат
+    calculationsStore.setCalculateClicked(true);
+    calculationsStore.updateCalculations();
   } catch (error) {
     message.error('Ошибка при сохранении данных: ' + error.message);
   } finally {
@@ -642,6 +646,10 @@ const submitForm = () => {
   coordinatesStore.interpolatePoints();
   show.value = false;
   message.success('Форма успешно отправлена');
+  
+  // Вызываем перерасчет после применения координат
+  calculationsStore.setCalculateClicked(true);
+  calculationsStore.updateCalculations();
 }
 
 // New functions
